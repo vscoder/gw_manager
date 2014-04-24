@@ -14,9 +14,12 @@ class MacAssoc(object):
         self._re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
         self._re_mac = re.compile("^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$")
 
-        self._arptypes = ['ethers', 'ipfw']
+        self._arptypes = ['ethers', 'ipfw', 'script']
+        self._script = ""
         self._arptype = ""
         self._arptable = {}
+
+        self.ipfw_start = 600
 
         self.arptable
 
@@ -57,19 +60,34 @@ class MacAssoc(object):
 
         return result
 
+    def rulenum(self, ip):
+        """Сгенерировать номер правила в ipfw
+        на основе ip адреса"""
+        octets = ip.split(".")
+        num = int(octets[3])
+        rulenum = self.ipfw_start + num
+        return rulenum
 
-    def addentry(self, ip, mac):
+    def add_arp(self, ip, mac):
         """Добавить значение в ARP таблицу"""
 
+    def add_ipfw(self, ip, mac):
+        """Добавить правило в ipfw"""
+
+    def add_script(self, ip, mac):
+        """Выполнить скрипт с параметрами ip, mac"""
 
 if __name__ == "__main__":
     
+    import subprocess
     import argparse
 
     parser = argparse.ArgumentParser(
         description="""Привязка ip-адресов к mac-адресам""")
     parser.add_argument('-t', '--arptype',
-                            help='Способ привязки (ethers, ipfw)')
+                            help='Способ привязки (ethers, ipfw, script)')
+    parser.add_argument('-s', '--script',
+                            help='Скрипт при --arptype=script')
     parser.add_argument('-f', '--find', 
                             help='Найти соответствия в ARP таблице')
     params = parser.parse_args()
@@ -80,10 +98,21 @@ if __name__ == "__main__":
         find = params.find.upper()
         sys.stderr.write("find: %s\n" % find)
 
+    if arptype == 'script':
+        if type(params.script) == str:
+            script = params.script
+            sys.stderr.write("script: %s\n" % script)
+        else:
+            parser.print_usage()
+            sys.exit()
+
     macs = MacAssoc()
-    #arptable = macs.arptable
 
     entrys = macs.arpentrys(find)
     for ip, mac in entrys.items():
-        print ip, mac
+        rulenum = macs.rulenum(ip)
+        #print ip, mac, rulenum
+        if arptype == 'script':
+            output = subprocess.check_output([script, ip, mac])
+            print output
 

@@ -13,8 +13,8 @@ class MacAssoc(object):
 
 
     def __init__(self):
-        self._re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
-        self._re_mac = re.compile("^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$")
+        self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
+        self.re_mac = re.compile("^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$")
 
 
         self._arptypes = ['ethers', 'ipfw', 'arp', 'script']
@@ -27,7 +27,6 @@ class MacAssoc(object):
         self.ipfw_start = 600
 
         self.arptable
-
 
 
     @property
@@ -67,8 +66,10 @@ class MacAssoc(object):
     def find_arp(self, addr):
         """Получить значение из ARP таблицы
         addr -- ip или mac адрес"""
+        addr = addr.upper()
         result = {}
         for ip, mac in self.arptable.items():
+            mac = mac.upper()
             if addr in ip or addr in mac:
                 result[ip] = mac
         return result
@@ -77,8 +78,10 @@ class MacAssoc(object):
     def get_arp(self, addr):
         """Получить значение из ARP таблицы
         addr -- ip или mac адрес"""
+        addr = addr.upper()
         result = []
         for ip, mac in self.arptable.items():
+            mac = mac.upper()
             if addr == ip or addr == mac:
                 result = (ip, mac)
         return result
@@ -86,9 +89,11 @@ class MacAssoc(object):
 
     def find_ethers(self, addr):
         """Поиск соответствия в файле self.ethers"""
+        addr = addr.upper()
         result = {}
         with open(self.ethers, 'r') as f:
             for line in f:
+                line = line.upper()
                 if addr in line:
                     ip, mac = line.split()
                     result[ip] = mac.upper()
@@ -97,24 +102,32 @@ class MacAssoc(object):
 
     def get_ethers(self, addr):
         """Получение соответствия из файла self.ethers"""
+        addr = addr.upper()
         result = []
         with open(self.ethers, 'r') as f:
             for line in f:
+                line = line.upper()
                 ip, mac = line.split()
-                if addr == ip or addr.upper() == mac.upper():
-                    result = (ip, mac.upper())
+                if addr == ip or addr == mac:
+                    result = (ip, mac)
         return result
 
 
     def set_ethers(self, (ip, mac)):
         """Задание соответствия в файле self.ethers"""
+        # Проверка на корректность ip и mac адресов
+        mac = mac.upper()
+        if not self.re_ip.match(ip):
+            raise ValueError("%s is not valid ip address" % ip)
+        if not self.re_mac.match(mac):
+            raise ValueError("%s is not valid mac address" % mac)
         # Преобразуем фаил в словарь {ip: mac, }
         entries = {}
         with open(self.ethers, 'r') as f:
             _ip, _mac = f.readline().split()
             entries[_ip] = _mac.upper()
         # Изменяем запись
-        entries[ip] = mac.upper()
+        entries[ip] = mac
 
         # Перезаписываем фаил
         with open(self.ethers, 'w') as f:
@@ -126,6 +139,7 @@ class MacAssoc(object):
         """Удаление соответствия из файла self.ethers"""
         # Преобразуем фаил в словарь {ip: mac, }
         # и если строка соответствует поиску не добавляем ее
+        addr = addr.upper()
         entries = {}
         with open(self.ethers, 'r') as f:
             line = f.readline()
@@ -142,7 +156,7 @@ class MacAssoc(object):
     def find_assoc(self, addr):
         """Команда для поиска записи
         в текущем хранилище ARP-привязок"""
-        print "arptype == %s" % self._arptype
+        addr = addr.upper()
         if self.arptype == 'ethers':
             return self.find_ethers(addr)
         elif self.arptype == 'arp':
@@ -160,7 +174,7 @@ class MacAssoc(object):
     def get_assoc(self, addr):
         """Команда для получения записи
         из текущего хранилища ARP-привязок"""
-        print "arptype == %s" % self._arptype
+        addr = addr.upper()
         if self.arptype == 'ethers':
             return self.get_ethers(addr)
         elif self.arptype == 'arp':
@@ -178,6 +192,19 @@ class MacAssoc(object):
     def set_assoc(self, ip, mac):
         """Команда для добавления записи
         в текущее хранилище ARP-привязок"""
+        mac = mac.upper()
+        if self.arptype == 'ethers':
+            self.set_ethers(ip, mac)
+            return (ip, mac)
+        elif self.arptype == 'arp':
+            pass
+        elif self.arptype == 'ipfw':
+            pass
+        elif self.arptype == 'script':
+            pass
+
+        else:
+            pass
 
     
     def del_assoc(self):
@@ -208,19 +235,34 @@ if __name__ == "__main__":
                         default = macs._arptypes[0],
                         choices = macs._arptypes,
                         help = 'Способ привязки (%s)' % ", ".join(macs._arptypes))
-    parser.add_argument('-s', '--script',
+    gr_script = parser.add_argument_group("arptype = script")
+    gr_script.add_argument('-s', '--script',
                         metavar = 'FILE',
                         help = 'Скрипт при --arptype=script')
-    parser.add_argument('-e', '--ethers',
+    gr_ethers = parser.add_argument_group("arptype = ethers")
+    gr_ethers.add_argument('-e', '--ethers',
                         metavar = 'FILE',
                         default = macs.ethers,
                         help = 'Фаил с соответствиями mac\tip')
-    parser.add_argument('-f', '--find', 
+    gr_action = parser.add_mutually_exclusive_group(required=True)
+    gr_action.add_argument('-f', '--find', 
                         metavar = 'PATTERN',
                         help = 'Найти соответствия в ARP таблице')
-    parser.add_argument('-g', '--get', 
-                        metavar = 'PATTERN',
+    gr_action.add_argument('-g', '--get', 
+                        metavar = 'IP or MAC',
                         help = 'Получить соответствие из текущего хранилища (arptype)')
+    gr_action.add_argument('--set',
+                        dest='set',
+                        action='store_true',
+                        help = 'Задать соответствие ip-mac в хранилище (arptype).\
+                            Необходимо так же указать --ip IP и --mac MAC')
+    gr_set = parser.add_argument_group("set")
+    gr_set.add_argument('--ip', 
+                        metavar = 'IP',
+                        help = 'IP-адрес для соответствия')
+    gr_set.add_argument('--mac', 
+                        metavar = 'MAC',
+                        help = 'MAC-адрес для соответствия')
     params = parser.parse_args()
 
     macs.arptype = params.arptype
@@ -250,6 +292,16 @@ if __name__ == "__main__":
         macs.ethers = params.ethers
     sys.stderr.write("ethers: %s\n" % macs.ethers)
 
+    # IP and MAC
+    if params.set:
+        if params.ip and params.mac:
+            ip = params.ip
+            mac = params.mac
+            sys.stderr.write("ip: %s\n" % ip)
+            sys.stderr.write("mac: %s\n" % mac)
+        else:
+            raise ValueError("--ip and --mac must be assigned in this mode")
+
     if find is not None:
         entries = macs.find_assoc(find)
         for ip, mac in entries.items():
@@ -267,3 +319,6 @@ if __name__ == "__main__":
         else:
             print "Association for %s not found" % get
 
+    if params.set:
+        macs.set_assoc(ip, mac)
+        

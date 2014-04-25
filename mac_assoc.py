@@ -55,6 +55,15 @@ class MacAssoc(object):
         return self._arptable
 
 
+    def rulenum(self, ip):
+        """Сгенерировать номер правила в ipfw
+        на основе ip адреса"""
+        octets = ip.split(".")
+        num = int(octets[3])
+        rulenum = self.ipfw_start + num
+        return rulenum
+
+
     def find_arp(self, addr):
         """Получить значение из ARP таблицы
         addr -- ip или mac адрес"""
@@ -63,6 +72,7 @@ class MacAssoc(object):
             if addr in ip or addr in mac:
                 result[ip] = mac
         return result
+
 
     def get_arp(self, addr):
         """Получить значение из ARP таблицы
@@ -73,13 +83,6 @@ class MacAssoc(object):
                 result = (ip, mac)
         return result
 
-    def rulenum(self, ip):
-        """Сгенерировать номер правила в ipfw
-        на основе ip адреса"""
-        octets = ip.split(".")
-        num = int(octets[3])
-        rulenum = self.ipfw_start + num
-        return rulenum
 
     def find_ethers(self, addr):
         """Поиск соответствия в файле self.ethers"""
@@ -88,8 +91,9 @@ class MacAssoc(object):
             for line in f:
                 if addr in line:
                     ip, mac = line.split()
-                    result[ip] = mac
+                    result[ip] = mac.upper()
         return result
+
 
     def get_ethers(self, addr):
         """Получение соответствия из файла self.ethers"""
@@ -97,9 +101,10 @@ class MacAssoc(object):
         with open(self.ethers, 'r') as f:
             for line in f:
                 ip, mac = line.split()
-                if addr == ip or addr == mac:
-                    result = (ip, mac)
+                if addr == ip or addr.upper() == mac.upper():
+                    result = (ip, mac.upper())
         return result
+
 
     def set_ethers(self, (ip, mac)):
         """Задание соответствия в файле self.ethers"""
@@ -107,15 +112,16 @@ class MacAssoc(object):
         entries = {}
         with open(self.ethers, 'r') as f:
             _ip, _mac = f.readline().split()
-            entries[_ip] = _mac
+            entries[_ip] = _mac.upper()
         # Изменяем запись
-        entries[ip] = mac
+        entries[ip] = mac.upper()
 
         # Перезаписываем фаил
         with open(self.ethers, 'w') as f:
             for _ip, _mac in entries.items():
                 f.write("%s\t%s\n" % (_ip, _mac))
         
+
     def del_ethers(self, addr):
         """Удаление соответствия из файла self.ethers"""
         # Преобразуем фаил в словарь {ip: mac, }
@@ -125,7 +131,7 @@ class MacAssoc(object):
             line = f.readline()
             if addr not in line:
                 _ip, _mac = line.split()
-                entries[_ip] = _mac
+                entries[_ip] = _mac.upper()
 
         # Перезаписываем фаил
         with open(self.ethers, 'w') as f:
@@ -149,6 +155,7 @@ class MacAssoc(object):
 
         else:
             pass
+
 
     def get_assoc(self, addr):
         """Команда для получения записи
@@ -243,7 +250,7 @@ if __name__ == "__main__":
         macs.ethers = params.ethers
     sys.stderr.write("ethers: %s\n" % macs.ethers)
 
-    if find:
+    if find is not None:
         entries = macs.find_assoc(find)
         for ip, mac in entries.items():
             #rulenum = macs.rulenum(ip)
@@ -253,7 +260,7 @@ if __name__ == "__main__":
             #    output = subprocess.check_output([script, ip, mac])
             #    print output
 
-    if get:
+    if get is not None:
         result = macs.get_assoc(get)
         if result:
             print "in %s found ip: %s\tmac: %s" % (macs.arptype, result[0], result[1])

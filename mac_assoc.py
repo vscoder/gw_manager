@@ -113,7 +113,7 @@ class MacAssoc(object):
         return result
 
 
-    def set_ethers(self, (ip, mac)):
+    def set_ethers(self, ip, mac):
         """Задание соответствия в файле self.ethers"""
         # Проверка на корректность ip и mac адресов
         mac = mac.upper()

@@ -49,7 +49,7 @@ class MacAssoc(object):
         return self._arptable
 
 
-    def arpentrys(self, addr):
+    def arpentries(self, addr):
         """Получить значение из ARP таблицы
         addr -- ip или mac адрес"""
         
@@ -82,14 +82,20 @@ if __name__ == "__main__":
     import subprocess
     import argparse
 
+    macs = MacAssoc()
+
     parser = argparse.ArgumentParser(
         description="""Привязка ip-адресов к mac-адресам""")
     parser.add_argument('-t', '--arptype',
-                            help='Способ привязки (ethers, ipfw, script)')
+                        metavar='TYPE',
+                        choices=macs._arptypes,
+                        help='Способ привязки (%s)' % ", ".join(macs._arptypes))
     parser.add_argument('-s', '--script',
-                            help='Скрипт при --arptype=script')
+                        metavar='FILE',
+                        help='Скрипт при --arptype=script')
     parser.add_argument('-f', '--find', 
-                            help='Найти соответствия в ARP таблице')
+                        metavar='PATTERN',
+                        help='Найти соответствия в ARP таблице')
     params = parser.parse_args()
 
     arptype = params.arptype
@@ -106,13 +112,12 @@ if __name__ == "__main__":
             parser.print_usage()
             sys.exit()
 
-    macs = MacAssoc()
-
-    entrys = macs.arpentrys(find)
-    for ip, mac in entrys.items():
+    entries = macs.arpentries(find)
+    for ip, mac in entries.items():
         rulenum = macs.rulenum(ip)
         #print ip, mac, rulenum
         if arptype == 'script':
+            if (rulenum - macs.ipfw_start) > 128: continue
             output = subprocess.check_output([script, ip, mac])
             print output
 

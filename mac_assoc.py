@@ -124,8 +124,9 @@ class MacAssoc(object):
         # Преобразуем фаил в словарь {ip: mac, }
         entries = {}
         with open(self.ethers, 'r') as f:
-            _ip, _mac = f.readline().split()
-            entries[_ip] = _mac.upper()
+            for line in f:
+                _ip, _mac = line.split()
+                entries[_ip] = _mac.upper()
         # Изменяем запись
         entries[ip] = mac
 
@@ -292,7 +293,7 @@ if __name__ == "__main__":
         macs.ethers = params.ethers
     sys.stderr.write("ethers: %s\n" % macs.ethers)
 
-    # IP and MAC
+    # IP and MAC (SET)
     if params.set:
         if params.ip and params.mac:
             ip = params.ip

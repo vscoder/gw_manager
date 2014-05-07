@@ -86,6 +86,27 @@ class MacAssoc(object):
                 result = (ip, mac)
         return result
 
+    def set_arp(self, ip, mac):
+        """Установить соответствие mac-ip в системной ARP-таблице"""
+        mac = mac.upper()
+        if not self.re_ip.match(ip):
+            raise ValueError("%s is not valid ip address" % ip)
+        if not self.re_mac.match(mac):
+            raise ValueError("%s is not valid mac address" % mac)
+        arp = dnet.arp()
+        _ip = dnet.addr(ip)
+        _mac = dnet.addr(mac)
+        arp.add(_ip, _mac)
+
+
+    def del_arp(self, ip):
+        """Установить соответствие mac-ip в системной ARP-таблице"""
+        if not self.re_ip.match(ip):
+            raise ValueError("%s is not valid ip address" % ip)
+        arp = dnet.arp()
+        _ip = dnet.addr(ip)
+        arp.delete(_ip)
+
 
     def find_ethers(self, addr):
         """Поиск соответствия в файле self.ethers"""
@@ -143,10 +164,10 @@ class MacAssoc(object):
         addr = addr.upper()
         entries = {}
         with open(self.ethers, 'r') as f:
-            line = f.readline()
-            if addr not in line:
-                _ip, _mac = line.split()
-                entries[_ip] = _mac.upper()
+            for line in f:
+                if addr not in line:
+                    _ip, _mac = line.split()
+                    entries[_ip] = _mac.upper()
 
         # Перезаписываем фаил
         with open(self.ethers, 'w') as f:
@@ -198,6 +219,7 @@ class MacAssoc(object):
             self.set_ethers(ip, mac)
             return (ip, mac)
         elif self.arptype == 'arp':
+            self.set_arp(ip, mac)
             pass
         elif self.arptype == 'ipfw':
             pass
@@ -208,19 +230,22 @@ class MacAssoc(object):
             pass
 
     
-    def del_assoc(self):
+    def del_assoc(self, ip):
         """Команда для удаления записи
         из текущего хранилища ARP-привязок"""
+        if self.arptype == 'ethers':
+            self.del_ethers(ip)
+        elif self.arptype == 'arp':
+            self.del_arp(ip)
+            pass
+        elif self.arptype == 'ipfw':
+            pass
+        elif self.arptype == 'script':
+            pass
 
+        else:
+            pass
 
-    def add_arp(self, ip, mac):
-        """Добавить значение в ARP таблицу"""
-
-    def add_ipfw(self, ip, mac):
-        """Добавить правило в ipfw"""
-
-    def add_script(self, ip, mac):
-        """Выполнить скрипт с параметрами ip, mac"""
 
 if __name__ == "__main__":
     
@@ -257,6 +282,9 @@ if __name__ == "__main__":
                         action='store_true',
                         help = 'Задать соответствие ip-mac в хранилище (arptype).\
                             Необходимо так же указать --ip IP и --mac MAC')
+    gr_action.add_argument('--rm',
+                        metavar='IP',
+                        help = 'Удалить соответствие ip-mac из хранилища (arptype).')
     gr_set = parser.add_argument_group("set")
     gr_set.add_argument('--ip', 
                         metavar = 'IP',
@@ -303,6 +331,13 @@ if __name__ == "__main__":
         else:
             raise ValueError("--ip and --mac must be assigned in this mode")
 
+    # REMOVE
+    if type(params.rm) == str:
+        rm = params.rm
+    else:
+        rm = None
+
+    # FIND
     if find is not None:
         entries = macs.find_assoc(find)
         for ip, mac in entries.items():
@@ -313,6 +348,7 @@ if __name__ == "__main__":
             #    output = subprocess.check_output([script, ip, mac])
             #    print output
 
+    # GET
     if get is not None:
         result = macs.get_assoc(get)
         if result:
@@ -320,6 +356,17 @@ if __name__ == "__main__":
         else:
             print "Association for %s not found" % get
 
+    # SET
     if params.set:
+        if macs.arptype != 'ethers':
+            macs.set_ethers(ip, mac)
         macs.set_assoc(ip, mac)
+        print "set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac)
+
+    # REMOVE
+    if rm is not None:
+        if macs.arptype != 'ethers':
+            macs.del_ethers(rm)
+        macs.del_assoc(rm)
+        print "del association from '%s' for ip: '%s'" % (macs.arptype, rm)
         

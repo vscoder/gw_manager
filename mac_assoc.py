@@ -111,7 +111,8 @@ class MacAssoc(object):
         arp = dnet.arp()
         _ip = dnet.addr(ip)
         _mac = dnet.addr(mac)
-        arp.add(_ip, _mac)
+        added = arp.add(_ip, _mac):
+        return added
 
 
     def del_arp(self, ip):
@@ -171,6 +172,8 @@ class MacAssoc(object):
         with open(self.ethers, 'w') as f:
             for _ip, _mac in entries.items():
                 f.write("%s\t%s\n" % (_ip, _mac))
+
+        return True
         
 
     def del_ethers(self, addr):
@@ -258,7 +261,6 @@ class MacAssoc(object):
             return (ip, mac)
         elif self.arptype == 'arp':
             self.set_arp(ip, mac)
-            pass
         elif self.arptype == 'ipfw':
             pass
         elif self.arptype == 'script':

@@ -14,7 +14,7 @@ class MacAssoc(object):
 
     def __init__(self):
         self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
-        self.re_mac = re.compile("^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$")
+        self.re_mac = re.compile("^([0-9A-F]{2}[:]){5}([0-9A-F]{2})$")
 
 
         self._arptypes = ['ethers', 'ipfw', 'arp', 'script']

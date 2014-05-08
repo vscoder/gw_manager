@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf_8 -*-
 
+import os
 import sys
 import re
 import subprocess
@@ -11,7 +12,6 @@ import dnet
 class MacAssoc(object):
     """Управление привязкой mac-адресов к ip-адресам"""
 
-
     def __init__(self):
         self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
         self.re_mac = re.compile("^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$")
@@ -20,7 +20,7 @@ class MacAssoc(object):
         self._arptypes = ['ethers', 'ipfw', 'arp', 'script']
 
         self._arptype = ""
-        self.ethers = "/etc/ethers"
+        self._ethers = "/etc/ethers"
         self._script = "echo"
         self._arptable = {}
 
@@ -50,8 +50,22 @@ class MacAssoc(object):
             arg[str(pa)] = str(ha).upper()
 
         arp.loop(add_entry, self._arptable)
-
+        
         return self._arptable
+
+
+    @property
+    def ethers(self):
+        """Фаил с соответствиями mac-ip"""
+        return self._ethers
+
+    @ethers.setter
+    def ethers(self, ethers):
+        ethers = os.path.abspath(ethers)
+        if not os.path.isfile(ethers):
+            self._ethers = ethers
+        else:
+            open(ethers, 'a').close()
 
 
     def rulenum(self, ip):
@@ -68,7 +82,8 @@ class MacAssoc(object):
         addr -- ip или mac адрес"""
         addr = addr.upper()
         result = {}
-        for ip, mac in self.arptable.items():
+        arptable = self.arptable
+        for ip, mac in arptable.items():
             mac = mac.upper()
             if addr in ip or addr in mac:
                 result[ip] = mac
@@ -174,6 +189,21 @@ class MacAssoc(object):
             for _ip, _mac in entries.items():
                 f.write("%s\t%s\n" % (_ip, _mac))
         
+
+    def ethers_to_arp(self):
+        """Запись фаила ethers в системную arp-таблицу"""
+        if os.path.isfile(self.ethers):
+            return subprocess.call(["/sbin/arp", "-f", self.ethers])
+        else:
+            return False
+
+    def arp_to_ethers(self):
+        """Сгенерировать фаил ethers на основе системной arp таблицы"""
+        arptable = self.arptable
+        with open(self.ethers, 'w') as f:
+            for _ip, _mac in arptable.items():
+                f.write("%s\t%s\n" % (_ip, _mac))
+
 
     def find_assoc(self, addr):
         """Команда для поиска записи
@@ -299,14 +329,14 @@ if __name__ == "__main__":
 
     # FIND
     if type(params.find) == str:
-        find = params.find.upper()
+        find = params.find
         sys.stderr.write("find: %s\n" % find)
     else:
         find = None
 
     # GET
     if type(params.get) == str:
-        get = params.get.upper()
+        get = params.get
         sys.stderr.write("get: %s\n" % get)
     else:
         get = None
@@ -358,15 +388,18 @@ if __name__ == "__main__":
 
     # SET
     if params.set:
-        if macs.arptype != 'ethers':
-            macs.set_ethers(ip, mac)
+        #if macs.arptype != 'ethers':
+        #    macs.set_ethers(ip, mac)
         macs.set_assoc(ip, mac)
+        if macs.arptype == 'ethers':
+            macs.ethers_to_arp()
         print "set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac)
 
     # REMOVE
     if rm is not None:
-        if macs.arptype != 'ethers':
-            macs.del_ethers(rm)
+        #if macs.arptype != 'ethers':
+        #    macs.del_ethers(rm)
         macs.del_assoc(rm)
+        if macs.arptype == 'ethers':
+            macs.ethers_to_arp()
         print "del association from '%s' for ip: '%s'" % (macs.arptype, rm)
-        

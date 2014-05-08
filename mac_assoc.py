@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf_8 -*-
 
 import os
@@ -18,6 +18,9 @@ class MacAssoc(object):
 
 
         self._arptypes = ['ethers', 'ipfw', 'arp', 'script']
+
+        self.sudo = spawn.find_executable("sudo")
+        self.arp = spawn.find_executable("arp")
 
         self._arptype = ""
         self._ethers = "/etc/ethers"
@@ -108,10 +111,11 @@ class MacAssoc(object):
             raise ValueError("%s is not valid ip address" % ip)
         if not self.re_mac.match(mac):
             raise ValueError("%s is not valid mac address" % mac)
-        arp = dnet.arp()
-        _ip = dnet.addr(ip)
-        _mac = dnet.addr(mac)
-        added = arp.add(_ip, _mac)
+        #arp = dnet.arp()
+        #_ip = dnet.addr(ip)
+        #_mac = dnet.addr(mac)
+        #added = arp.add(_ip, _mac)
+        added = subprocess.call([self.sudo, self.arp, "-s", ip, mac])
         return added
 
 
@@ -119,9 +123,10 @@ class MacAssoc(object):
         """Установить соответствие mac-ip в системной ARP-таблице"""
         if not self.re_ip.match(ip):
             raise ValueError("%s is not valid ip address" % ip)
-        arp = dnet.arp()
-        _ip = dnet.addr(ip)
-        deleted = arp.delete(_ip)
+        #arp = dnet.arp()
+        #_ip = dnet.addr(ip)
+        #deleted = arp.delete(_ip)
+        deleted = subprocess.call([self.sudo, self.arp, "-d", ip])
         return deleted
 
 
@@ -185,10 +190,10 @@ class MacAssoc(object):
         deleted = False
         with open(self.ethers, 'r') as f:
             for line in f:
-                if addr in line:
+                _ip, _mac = line.split()
+                if addr == _ip or addr == _mac:
                     deleted = True
                 else:
-                    _ip, _mac = line.split()
                     entries[_ip] = _mac.upper()
 
         # Перезаписываем фаил
@@ -202,7 +207,7 @@ class MacAssoc(object):
     def ethers_to_arp(self):
         """Запись фаила ethers в системную arp-таблицу"""
         if os.path.isfile(self.ethers):
-            return subprocess.call(["/sbin/arp", "-f", self.ethers])
+            return subprocess.call([self.sudo, self.arp, "-f", self.ethers])
         else:
             return False
 

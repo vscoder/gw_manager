@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf_8 -*-
 
 import cgi
@@ -43,9 +43,9 @@ if find:
         print "<tr><td>%s</td><td>%s</td></tr>\n" % (ip, mac)
     print "</table>"
 elif rm:
+    if macs.arptype == 'ethers':
+            macs.del_arp(rm)
     if macs.del_assoc(rm):
-        if macs.arptype == 'ethers':
-            macs.ethers_to_arp()
         print "OK: del association from '%s' for ip: '%s'" % (macs.arptype, rm)
         logging.info("OK: del association from '%s' for ip: '%s'" % (macs.arptype, rm))
     else:

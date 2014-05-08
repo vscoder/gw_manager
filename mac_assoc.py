@@ -120,7 +120,8 @@ class MacAssoc(object):
             raise ValueError("%s is not valid ip address" % ip)
         arp = dnet.arp()
         _ip = dnet.addr(ip)
-        arp.delete(_ip)
+        deleted = arp.delete(_ip)
+        return deleted
 
 
     def find_ethers(self, addr):
@@ -178,9 +179,12 @@ class MacAssoc(object):
         # и если строка соответствует поиску не добавляем ее
         addr = addr.upper()
         entries = {}
+        deleted = False
         with open(self.ethers, 'r') as f:
             for line in f:
-                if addr not in line:
+                if addr in line:
+                    deleted = True
+                else:
                     _ip, _mac = line.split()
                     entries[_ip] = _mac.upper()
 
@@ -188,6 +192,8 @@ class MacAssoc(object):
         with open(self.ethers, 'w') as f:
             for _ip, _mac in entries.items():
                 f.write("%s\t%s\n" % (_ip, _mac))
+
+        return deleted
         
 
     def ethers_to_arp(self):
@@ -208,6 +214,8 @@ class MacAssoc(object):
     def find_assoc(self, addr):
         """Команда для поиска записи
         в текущем хранилище ARP-привязок"""
+        if not addr:
+            addr = ""
         addr = addr.upper()
         if self.arptype == 'ethers':
             return self.find_ethers(addr)
@@ -264,10 +272,9 @@ class MacAssoc(object):
         """Команда для удаления записи
         из текущего хранилища ARP-привязок"""
         if self.arptype == 'ethers':
-            self.del_ethers(ip)
+            return self.del_ethers(ip)
         elif self.arptype == 'arp':
-            self.del_arp(ip)
-            pass
+            return self.del_arp(ip)
         elif self.arptype == 'ipfw':
             pass
         elif self.arptype == 'script':

@@ -111,7 +111,7 @@ class MacAssoc(object):
         arp = dnet.arp()
         _ip = dnet.addr(ip)
         _mac = dnet.addr(mac)
-        added = arp.add(_ip, _mac):
+        added = arp.add(_ip, _mac)
         return added
 
 

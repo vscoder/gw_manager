@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Привязка mac-адресов</title>
+</head>
+
+<body>
+
+<div>
+<form name="find_assoc" action="/cgi-bin/wrapper.cgi" method="get">
+<input name="find" type="text">
+<input type="submit" value="Найти">
+</form>
+</form>
+<form name="del_assoc" action="/cgi-bin/wrapper.cgi" method="get">
+<input name="del" type="text">
+<input type="submit" value="Удалить">
+</form>
+<form name="set_assoc" action="/cgi-bin/wrapper.cgi" method="get">
+<input name="set" type="hidden" value=True>
+<input name="ip" type="text">
+<input name="mac" type="text">
+<input type="submit" value="Задать">
+</div>
+
+</body>
+
+</html>

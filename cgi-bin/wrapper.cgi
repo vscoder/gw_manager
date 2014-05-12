@@ -31,7 +31,8 @@ rm = arguments.getvalue('del')
 add = arguments.getvalue('set')
 ip = arguments.getvalue('ip')
 mac = arguments.getvalue('mac')
-mac = mac.replace("-",":")
+if mac:
+    mac = mac.replace("-",":")
 
 
 print "Content-Type: text/html;charset=utf-8"

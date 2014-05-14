@@ -9,23 +9,85 @@
 
 <div>
 <form name="find_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
-<input name="find" type="text">
-<input type="submit" value="Найти">
+<table>
+<tr>
+	<td>
+		Найти<br>
+		ip
+	</td><td>
+	</td>
+</tr>
+<tr>
+	<td>
+		<input name="find" type="text">
+	</td><td>
+		<input type="submit" value="Найти">
+	</td>
+<tr>
+</table>
 </form>
 <form name="del_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
-<input name="del" type="text">
-<input type="submit" value="Удалить">
+<table>
+<tr>
+	<td>
+		Удалить привязку<br>
+		ip
+	</td><td>
+	</td>
+</tr>
+<tr>
+	<td>
+		<input name="del" type="text">
+	</td><td>
+		<input type="submit" value="Удалить">
+	</td>
+<tr>
+</table>
 </form>
 <form name="set_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
 <input name="set" type="hidden" value=True>
-<input name="ip" type="text">
-<input name="mac" type="text">
-<input type="submit" value="Задать">
+<table>
+<tr>
+	<td>
+		Задать соответствие<br>
+		ip
+	</td><td>
+		mac
+	</td><td>
+	</td>
+</tr>
+<tr>
+	<td>
+		<input name="ip" type="text">
+	</td><td>
+		<input name="mac" type="text">
+	</td><td>
+		<input type="submit" value="Задать">
+	</td>
+<tr>
+</table>
 </form>
 <form name="scan_tcp" action="/cgi-bin/scanner.cgi" method="get">
-<input name="host" type="text">
-<input name="port" type="text">
-<input type="submit" value="Проверить">
+<table>
+<tr>
+	<td>
+		Проверить tcp порт<br>
+		ip
+	</td><td>
+		port
+	</td><td>
+	</td>
+</tr>
+<tr>
+	<td>
+		<input name="host" type="text">
+	</td><td>
+		<input name="port" type="text">
+	</td><td>
+		<input type="submit" value="Проверить">
+	</td>
+<tr>
+</table>
 </form>
 </div>
 

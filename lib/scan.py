@@ -17,6 +17,7 @@ class Scan(object):
 
         self.host = host
         self.port = port
+        self.timeout = 5
 
     @property
     def host(self):
@@ -52,15 +53,25 @@ class Scan(object):
         """Протокол (tcp/udp)"""
         return self._proto
 
+    @property
+    def timeout(self):
+        """Время ожидания echo-ответа или порта"""
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, timeout):
+        """Время ожидания echo-ответа или порта, секунд"""
+        self._timeout = int(timeout)
 
     def check_tcp_port(self):
         """Проверка статуса tcp-порта"""
         host = self.host
         port = int(self.port)
 
-        #socket.socket().connect((host, port))
+        sock = socket.socket()
+        sock.settimeout(self._timeout)
         try:
-            socket.socket().connect((host, port))
+            sock.connect((host, port))
             #if results is not None:
             #    results.append(port)
             return True

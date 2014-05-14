@@ -15,7 +15,7 @@ from mac_assoc import MacAssoc
 
 # Инициализация логирования
 import logging
-logging.basicConfig(filename='log/wrapper.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='log/mac_assoc.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 # Инициализация класса
 macs = MacAssoc()

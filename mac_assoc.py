@@ -319,8 +319,7 @@ class MacAssoc(object):
         elif self.arptype == 'arp':
             return self.find_arp(addr)
         elif self.arptype == 'ipfw':
-            pass
-
+            return self.find_ipfw(addr)
         elif self.arptype == 'script':
             pass
 
@@ -337,8 +336,7 @@ class MacAssoc(object):
         elif self.arptype == 'arp':
             return self.get_arp(addr)
         elif self.arptype == 'ipfw':
-            pass
-
+            return self.get_ipfw(addr)
         elif self.arptype == 'script':
             pass
 
@@ -356,7 +354,7 @@ class MacAssoc(object):
         elif self.arptype == 'arp':
             self.set_arp(ip, mac)
         elif self.arptype == 'ipfw':
-            pass
+            self.set_ipfw(ip, mac)
         elif self.arptype == 'script':
             pass
 
@@ -372,7 +370,7 @@ class MacAssoc(object):
         elif self.arptype == 'arp':
             return self.del_arp(ip)
         elif self.arptype == 'ipfw':
-            pass
+            return self.del_ipfw(ip)
         elif self.arptype == 'script':
             pass
 

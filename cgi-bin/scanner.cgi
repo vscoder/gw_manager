@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf_8 -*-
 
+import sys
 import cgi
 import cgitb
 cgitb.enable()

@@ -10,7 +10,7 @@ import os
 
 import logging
 
-sys.path.insert(0, "./")
+sys.path.insert(0, "./lib")
 from mac_assoc import MacAssoc
 
 # Инициализация логирования

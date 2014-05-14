@@ -9,6 +9,7 @@ from distutils import spawn
 
 import dnet
 
+
 class MacAssoc(object):
     """Управление привязкой mac-адресов к ip-адресам"""
 
@@ -21,6 +22,7 @@ class MacAssoc(object):
 
         self.sudo = spawn.find_executable("sudo")
         self.arp = spawn.find_executable("arp")
+        self.ipfw = spawn.find_executable("ipfw")
 
         self._arptype = ""
         self._ethers = "/etc/ethers"
@@ -69,15 +71,6 @@ class MacAssoc(object):
             self._ethers = ethers
         else:
             open(ethers, 'a').close()
-
-
-    def rulenum(self, ip):
-        """Сгенерировать номер правила в ipfw
-        на основе ip адреса"""
-        octets = ip.split(".")
-        num = int(octets[3])
-        rulenum = self.ipfw_start + num
-        return rulenum
 
 
     def find_arp(self, addr):
@@ -202,10 +195,106 @@ class MacAssoc(object):
                 f.write("%s\t%s\n" % (_ip, _mac))
 
         return deleted
+
+
+    def rulenum(self, ip):
+        """Сгенерировать номер правила в ipfw
+        на основе ip адреса"""
+        octets = ip.split(".")
+        num = int(octets[3])
+        rulenum = self.ipfw_start + num
+        return rulenum
+
+    def split_ipfw(self, ipfw_str):
+        """Получает из строки ipfw_str параметры правила
+        00602 deny log logamount 5 ip from 84.253.120.2 to any out via ifwan0 not MAC any bc:f6:85:fb:d7:d1 mac-type 0x0800"""
+        rule = ipfw_str.split()
+        rulenum = int(rule[0])
+        ip = rule[7]
+        mac = rule[16]
+
+        if self.rulenum(ip) != rulenum:
+            raise RuntimeError("bad ipfw rule number for '%s'" % ipfw_str)
+        if not self.re_ip.match(ip):
+            raise ValueError("%s is not valid ip address" % ip)
+        if not self.re_mac.match(mac):
+            raise ValueError("%s is not valid mac address" % mac)
+
+        return (ip, mac)
+
+    def list_ipfw(self):
+        """Список правил ipfw для фильтрации по mac-адресам"""
+        if not self.ipfw:
+            raise RuntimeError("'ipfw' not found in PATH")
+        ipfw_range = "%s-%s" % (self.ipfw_start, self.ipfw_start + 255)
+        rules = subprocess.check_output([self.sudo, self.ipfw, 'list', ipfw_range])
+        arptable = {}
+        for rule in rules:
+            ip, mac = self.split_ipfw(rule)
+            arptable[ip] = mac
+
+        return arptable
+
+    def find_ipfw(self, addr):
+        """Поиск по части ip/mac адреса"""
+        addr = addr.upper()
+        arptable = self.list_ipfw()
+        result = {}
+        for ip, mac in arptable.items():
+            if addr in ip or addr in mac:
+                result[ip] = mac
+
+        return result
+            
+    def get_ipfw(self, addr):
+        """Получить ip/mac по точному совпадению"""
+        addr = addr.upper()
+        arptable = self.list_ipfw()
+        result = {}
+        for ip, mac in arptable.items():
+            if addr == ip or addr == mac:
+                result[ip] = mac
+
+        return result
+
+    def set_ipfw(self, ip, mac):
+        """Задать соответствие mac-ip в ipfw"""
+        if not self.ipfw:
+            raise RuntimeError("'ipfw' not found in PATH")
+        if not self.re_ip.match(ip):
+            raise ValueError("%s is not valid ip address" % ip)
+        if not self.re_mac.match(mac):
+            raise ValueError("%s is not valid mac address" % mac)
+
+        self.del_ipfw(ip)
+
+        # ipfw add $RULENUM deny log logamount 5 ip from $IP to any out via ifwan0 not MAC any $MAC mac-type ipv4
+        result = subprocess.call([self.sudo, self.ipfw,
+                                  'add', rulenum, 'deny',
+                                  'log', 'logamount', '5',
+                                  'ip', 'from', ip, 'to', 'any',
+                                  'out', 'via', 'ifwan0',
+                                  'not', 'MAC', 'any', mac, 'mac-type', 'ipv4'])
+
+        return result
+
+    def del_ipfw(self, ip):
+        """Удалить соответствие из ipfw"""
+        if not self.ipfw:
+            raise RuntimeError("'ipfw' not found in PATH")
+        if not self.re_ip.match(ip):
+            raise ValueError("%s is not valid ip address" % ip)
+
+        rulenum = self.rulenum(ip)
         
+        result = subprocess.call([self.sudo, self.ipfw, 'delete', rulenum])
+
+        return result
 
     def ethers_to_arp(self):
         """Запись фаила ethers в системную arp-таблицу"""
+        if not self.sudo or not self.arp:
+            raise RuntimeError("'sudo' or 'arp' not found in PATH")
         if os.path.isfile(self.ethers):
             return subprocess.call([self.sudo, self.arp, "-f", self.ethers])
         else:

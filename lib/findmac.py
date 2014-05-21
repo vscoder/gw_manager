@@ -59,6 +59,12 @@ class switch(object):
         if proto == 'telnet':
             raise ValueError("Protocol '%s' not implemented yet" % proto)
 
+        # Do protocol-dependent actions
+        if proto == 'snmp':
+            self.port = 161
+        elif proto == 'telnet':
+            self.port = 23
+
         self._proto = proto
 
     @property

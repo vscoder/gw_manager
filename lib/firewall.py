@@ -36,6 +36,9 @@ class Pf(object):
         if not self.ip:
             raise RuntimeError("ip must be set")
         
+        if not self.pf:
+            raise RuntimeError("can't find 'pfctl' executable")
+        
         cmd = [self.pf, '-t', self.table, '-T', 'test', self.ip]
         result = subprocess.call(cmd)
         if result == 0:

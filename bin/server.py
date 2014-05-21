@@ -11,6 +11,12 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(name)s: %(message)s',
                     )
 
+sys.path.insert(0, "./lib")
+from scan import Scan
+from firewall import Pf
+from firewall import Ipfw
+
+
 class GwManagerHandler(SocketServer.StreamRequestHandler):
     """
     The RequestHandler class for our server.
@@ -21,8 +27,6 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
     """
     
     def __init__(self, request, client_address, server):
-        sys.path.insert(0, "./lib")
-        from scan import Scan
         self.Scan = Scan
 
         self.logger = logging.getLogger('GwManagerHandler')
@@ -43,13 +47,27 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
         self.logger.debug("{} connected".format(self.client_address[0]))
         self.logger.debug("child process id: '%s', uid: '%s'" % (cur_pid, uid))
         self.logger.debug('recieved data: %s' % self.data)
-        #host, port = self.data.split()
-        #result = self.do_scan(host, port)
-        result = self.run_cmd(self.data)
+        ##host, port = self.data.split()
+        ##result = self.do_scan(host, port)
+        #result = self.run_cmd(self.data)
+        #self.logger.debug('send reply: %s' % result)
+        ## just send back the same data, but upper-cased
+        ##self.request.sendall(result)
+        #self.wfile.write(result)
+
+        data = self.data.split()
+        cmd = data[0]
+        args = data[1:]
+
+        if cmd == "check_ip":
+            ip = args[0]
+            result = self.check_ip(ip)
+        else:
+            result = "bad input data '%s'" % data
+
         self.logger.debug('send reply: %s' % result)
-        # just send back the same data, but upper-cased
-        #self.request.sendall(result)
         self.wfile.write(result)
+
 
     #def finish(self):
     #    self.logger.debug('finish')
@@ -67,8 +85,35 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
 
         return result
 
-    def check_status(self, ip):
+    def check_ip(self, ip):
         """Check block status and shape of ip address"""
+        # PF
+        pf = Pf(ip = ip)
+
+        if pf.check_ip():
+            status = 'ON'
+        else:
+            status = 'OFF'
+
+        # IPFW
+        ipfw = Ipfw(ip = ip)
+
+        pipes = ipfw.check_ip()
+        if pipes:
+            shape_in = pipes[3]
+            shape_out = pipes[2]
+        else:
+            shape_in = 'unknown'
+            shape_out = 'unknown'
+
+        result = """
+                 IP '%(ip)s' status: %(status)s
+                 rx traffic shape: %(in)d Kbit/s
+                 tx traffic shape: %(out)d Kbit/s
+                 """ % {'ip': ip, 'status': status, 'in': shape_in, 'out': shape_out}
+
+        return result
+        
 
     def run_cmd(self, cmd):
         """run shell cmd as current user"""

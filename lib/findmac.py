@@ -2,6 +2,8 @@
 # -*- coding: utf_8 -*-
 
 import re
+import subprocess
+from distutils import spawn
 
 class Switch(object):
     
@@ -10,9 +12,12 @@ class Switch(object):
         # see RFC 1123, regex found in http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address
         self.re_host = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
         self.re_mac = re.compile("^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$")
+        self.re_community = re.compile("^[a-zA-Z1-9_\-]+$")
 
         self._models = ['A3100', 'OTHER', ]
         self._protocols = ['snmp', 'telnet']
+
+        self.snmpget = spawn.find_executable("snmpget")
 
         #self._host = '127.0.0.1'
         #self._port = 161
@@ -20,6 +25,7 @@ class Switch(object):
         self.host = host
         self.port = port
         self.timeout = 5
+        self.community = 'public'
 
         self.mactable_oid = ''
 
@@ -77,6 +83,20 @@ class Switch(object):
 
         self._proto = proto
 
+
+    @property
+    def community(self):
+        """snmpget community"""
+        return self._community
+
+    @community.setter
+    def community(self, comm):
+        if not self.re_community.match(comm):
+            raise ValueError("'%s' is not valid community string" % comm)
+
+        self._community = comm
+
+
     @property
     def model(self):
         """Модель свича"""
@@ -123,12 +143,12 @@ class Switch(object):
 
     def find_mac_snmp(self, mac):
         """Поиск mac-адреса с помощью snmp"""
-        host = self.host
-        port = self.port
 
         oid = "%s.%s" % (self.mactable_oid, self.mac_oid(mac))
 
-        return oid
+        cmd = [self.snmpget, '-v1', '-c', self.community, self.host, oid]
+        out = subprocess.check_output(cmd)
+        return out
 
 
 #class model(object):
@@ -146,18 +166,19 @@ def main():
     parser.add_argument('-p', '--port', 
         metavar = 'PORT',
         help = 'Порт для проверки')
+    parser.add_argument('-c', '--community', 
+        metavar = 'COMMUNITY',
+        help = 'Порт для проверки')
     parser.add_argument('-m', '--mac', 
         metavar = 'MAC',
         help = 'Mac-адрес для поиска')
     params = parser.parse_args()
 
-    _host = params.host
-    _port = params.port
-
     # Инициализация
     sw = Switch(host = params.host)
     sw.proto = 'snmp'
     sw.model = 'A3100'
+    sw.community = params.community
     
     res = sw.find_mac(params.mac)
 

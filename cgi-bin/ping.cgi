@@ -30,5 +30,5 @@ print "Content-Type: text/html;charset=utf-8"
 print
 
 out = "returncode: %s\n%s" % result
-print out
+print "<br>".join(out.split("\n"))
 logging.info(out)

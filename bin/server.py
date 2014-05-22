@@ -9,6 +9,7 @@ import SocketServer
 import logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(name)s: %(message)s',
+                    filename='log/server.log',
                     )
 
 sys.path.insert(0, "./lib")

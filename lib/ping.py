@@ -16,7 +16,7 @@ class Ping(object):
         self.ping = spawn.find_executable("ping")
 
         self.host = host
-        self._count = 4
+        self._count = "4"
         self._timeout = 1000
 
 
@@ -38,6 +38,8 @@ class Ping(object):
 
     @count.setter
     def count(self, count):
+        if not count:
+            count = self._count
         if not count.isdigit():
             raise ValueError("%s is not valid ping count" % count)
         self._count = count

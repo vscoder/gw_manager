@@ -39,7 +39,7 @@ print "Content-Type: text/html;charset=utf-8"
 print
 
 if find:
-    entries = macs.find_assoc(find)
+    entries = macs.find_arp(find)
 
     print "<table>"
     for ip, mac in entries.items():

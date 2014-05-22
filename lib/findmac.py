@@ -98,6 +98,20 @@ class Switch(object):
 
 
     @property
+    def vlan(self):
+        """vlan для поиска mac-адреса"""
+        return int(self._vlan)
+
+    @vlan.setter
+    def vlan(self, vlan):
+        vlan = int(vlan)
+        if 4000 < vlan < 1:
+            raise ValueError("vlan must be integer between 1 and 4000")
+
+        self._vlan = vlan
+
+
+    @property
     def model(self):
         """Модель свича"""
         return self._model
@@ -108,7 +122,9 @@ class Switch(object):
             raise ValueError("wrong model '%s', see switch.models" % model)
 
         if model == 'A3100':
-            self.mactable_oid = '.1.3.6.1.2.1.17.7.1.2.2.1.2.1'
+            if not self._vlan:
+                raise RuntimeError("Switch.vlan must be set for model 'A3100'")
+            self.mactable_oid = '.1.3.6.1.2.1.17.7.1.2.2.1.2.%d' % self.vlan
         elif model == 'OTHER':
             self.mactable_oid = '.1.3.6.1.2.1.17.4.3.1.2'
         else:
@@ -147,7 +163,16 @@ class Switch(object):
         oid = "%s.%s" % (self.mactable_oid, self.mac_oid(mac))
 
         cmd = [self.snmpget, '-v1', '-c', self.community, self.host, oid]
-        out = subprocess.check_output(cmd)
+        
+        try:
+            out = subprocess.check_output(cmd)
+        except:
+            out = False
+
+        if out:
+            #out = out.split("=")[1].split(":")[1].strip()
+            out = out.split()[-1]
+
         return out
 
 
@@ -168,7 +193,10 @@ def main():
         help = 'Порт для проверки')
     parser.add_argument('-c', '--community', 
         metavar = 'COMMUNITY',
-        help = 'Порт для проверки')
+        help = 'Snmp community')
+    parser.add_argument('-v', '--vlan', 
+        metavar = 'VLAN',
+        help = 'Vlan для поиска mac-адреса')
     parser.add_argument('-m', '--mac', 
         metavar = 'MAC',
         help = 'Mac-адрес для поиска')
@@ -177,12 +205,13 @@ def main():
     # Инициализация
     sw = Switch(host = params.host)
     sw.proto = 'snmp'
+    sw.vlan = params.vlan
     sw.model = 'A3100'
     sw.community = params.community
     
     res = sw.find_mac(params.mac)
 
-    print res
+    print "MAC found on port %s" % res
     
 
 if __name__ == "__main__":

@@ -108,8 +108,8 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
 
         result = """
                  IP '%(ip)s' status: %(status)s
-                 rx traffic shape: %(in)d Kbit/s
-                 tx traffic shape: %(out)d Kbit/s
+                 rx traffic shape: %(in)s Kbit/s
+                 tx traffic shape: %(out)s Kbit/s
                  """ % {'ip': ip, 'status': status, 'in': shape_in, 'out': shape_out}
 
         return result

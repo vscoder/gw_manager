@@ -17,11 +17,12 @@ logging.basicConfig(filename='log/ping.log', format='%(asctime)s %(message)s', l
 # Разбор переданных аргументов
 arguments = cgi.FieldStorage()
 host = arguments.getvalue('host')
+count = arguments.getvalue('count')
 
 # Инициализация класса
 ping = Ping(host = host)
 
-ping.timeout = 1
+ping.count = count
 result = ping.ping_host()
 
 

@@ -3,6 +3,7 @@
 
 import sys
 import cgi
+import socket
 import cgitb
 cgitb.enable()
 
@@ -19,6 +20,31 @@ logging.basicConfig(filename='log/check_ip.log', format='%(asctime)s %(message)s
 arguments = cgi.FieldStorage()
 ip = arguments.getvalue('ip')
 
+# Передача команды на сервер и получение результата
+HOST, PORT = "localhost", 1237
+data = "check_ip %s" % ip
+
+# Create a socket (SOCK_STREAM means a TCP socket)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+try:
+    # Connect to server and send data
+    sock.connect((HOST, PORT))
+    sock.sendall(data + "\n")
+
+    # Receive data from the server and shut down
+    received = sock.recv(16384)
+finally:
+    sock.close()
+
+print "Content-Type: text/html;charset=utf-8"
+print
+
+#print "Sent:     {}".format(data)
+print "Received: {}".format(received)
+logging.info(received)
+
+"""
 # Инициализация класса
 # PF
 pf = Pf(ip = ip)
@@ -52,3 +78,4 @@ print s_out
 logging.info(st)
 logging.info(s_in)
 logging.info(s_out)
+"""

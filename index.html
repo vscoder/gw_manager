@@ -8,6 +8,7 @@
 <body>
 
 <div>
+
 <form name="find_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
 <table>
 <tr>
@@ -26,6 +27,7 @@
 <tr>
 </table>
 </form>
+
 <form name="del_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
 <table>
 <tr>
@@ -44,6 +46,7 @@
 <tr>
 </table>
 </form>
+
 <form name="set_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
 <input name="set" type="hidden" value=True>
 <table>
@@ -67,6 +70,7 @@
 <tr>
 </table>
 </form>
+
 <form name="scan_tcp" action="/cgi-bin/scanner.cgi" method="get">
 <table>
 <tr>
@@ -89,6 +93,7 @@
 <tr>
 </table>
 </form>
+
 <form name="check_ip" action="/cgi-bin/check_ip.cgi" method="get">
 <table>
 <tr>
@@ -106,6 +111,31 @@
 	</td>
 <tr>
 </table>
+</form>
+
+<form name="ping" action="/cgi-bin/ping.cgi" method="get">
+<table>
+<tr>
+	<td>
+		Пинг хоста<br>
+		host
+	</td><td>
+		count
+	</td><td>
+	</td>
+</tr>
+<tr>
+	<td>
+		<input name="host" type="text">
+	</td><td>
+		<input name="count" type="text">
+	</td><td>
+		<input type="submit" value="Выполнить">
+	</td>
+<tr>
+</table>
+</form>
+
 </div>
 
 <div id="out" name="out">

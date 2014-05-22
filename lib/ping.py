@@ -9,73 +9,81 @@ from distutils import spawn
 class Ping(object):
     """Пинг средствами комманды ping"""
 
-    def __init__(self, ip):
-        self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
+    def __init__(self, host):
+        # see RFC 1123, regex found in http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address
+        self.re_host = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
 
-        self.pf = spawn.find_executable("pfctl")
+        self.ping = spawn.find_executable("ping")
 
-        self.table = 'clients'
-
-        self.ip = ip
+        self.host = host
+        self._count = 4
+        self._timeout = 1000
 
 
     @property
-    def ip(self):
+    def host(self):
         """Хост для проверки"""
-        return self._ip
+        return self._host
 
-    @ip.setter
-    def ip(self, ip):
-        if not self.re_ip.match(ip):
-            raise ValueError("%s is not valid ip address" % ip)
+    @host.setter
+    def host(self, host):
+        if not self.re_host.match(host):
+            raise ValueError("%s is not valid host name" % host)
+        self._host = host
 
-        self._ip = ip
+    @property
+    def count(self):
+        """Количество посылаемых icmp-пакетов"""
+        return str(self._count)
 
-    def check_ip(self):
-        """Проверить наличие ip в таблице self.table"""
-        if not self.ip:
-            raise RuntimeError("ip must be set")
+    @count.setter
+    def count(self, count):
+        if not count.isdigit():
+            raise ValueError("%s is not valid ping count" % count)
+        self._count = count
+
+    @property
+    def timeout(self):
+        """Время ожидания ответа, ms"""
+        return str(self._timeout)
+
+    @timeout.setter
+    def timeout(self, timeout):
+        timeout = str(timeout)
+        if not timeout.isdigit():
+            raise ValueError("%s is not valid timeout" % timeout)
+        self._timeout = timeout
+
+    def ping_host(self):
+        """Выполнить пинг хоста host"""
+        if not self._host:
+            raise RuntimeError("host must be set")
+        if not self.ping:
+            raise RuntimeError("can't find 'ping' executable")
         
-        if not self.pf:
-            raise RuntimeError("can't find 'pfctl' executable")
-        
-        cmd = [self.pf, '-t', self.table, '-T', 'test', self.ip]
-        result = subprocess.call(cmd)
-        if result == 0:
-            return True
-        else:
-            return False
+        cmd = [self.ping, '-c', self.count, '-W', self.timeout, self.host]
+        PIPE = subprocess.PIPE
+        ping = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output = ping.stdout.read()
+        retcode = ping.poll()
+        return (retcode, output)
 
 
 def main():
     # Обработка аргументов коммандной строки
     import argparse
     parser = argparse.ArgumentParser(
-        description="""Проверка ip""")
-    parser.add_argument('-i', '--ip',
-        metavar = 'IP',
-        help = 'IP для проверки')
+        description="""ping host""")
+    parser.add_argument('-H', '--host',
+        metavar = 'HOST',
+        help = 'host для пинга')
     params = parser.parse_args()
 
-    _ip = params.ip
+    ping = Ping(params.host)
+    ping.timeout = 1
+    result = ping.ping_host()
 
-    # PF
-    pf = Pf(ip = _ip)
-
-    if pf.check_ip():
-        print "client '%s' is ON" % _ip
-    else:
-        print "client '%s' is OFF" % _ip
-
-    # IPFW
-    ipfw = Ipfw(ip = _ip)
-
-    pipes = ipfw.check_ip()
-    if pipes:
-        print "in shape: %s Kbit/s" % pipes[3]
-        print "out shape: %s Kbit/s" % pipes[2]
-    else:
-        print "no shaping found for ip '%s'" % _ip
+    print "returncode: %s\n%s" % result
 
 
 if __name__ == "__main__":

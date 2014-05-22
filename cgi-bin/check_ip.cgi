@@ -41,7 +41,7 @@ print "Content-Type: text/html;charset=utf-8"
 print
 
 #print "Sent:     {}".format(data)
-print "Received: {}".format(received)
+print "<br>".join(received.split("\n"))
 logging.info(received)
 
 """

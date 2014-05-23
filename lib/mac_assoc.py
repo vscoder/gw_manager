@@ -9,20 +9,17 @@ from distutils import spawn
 
 import dnet
 
+from gwman import gwman
 
-class MacAssoc(object):
+class MacAssoc(gwman):
     """Управление привязкой mac-адресов к ip-адресам"""
 
     def __init__(self):
-        self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
-        self.re_mac = re.compile("^([0-9A-F]{2}[:]){5}([0-9A-F]{2})$")
-
-
         self._arptypes = ['ethers', 'ipfw', 'arp', 'script']
 
-        self.sudo = spawn.find_executable("sudo")
-        self.arp = spawn.find_executable("arp")
-        self.ipfw = spawn.find_executable("ipfw")
+        self.sudo = self.find_exec("sudo")
+        self.arp = self.find_exec("arp")
+        self.ipfw = self.find_exec("ipfw")
 
         self._arptype = ""
         self._ethers = "/etc/ethers"
@@ -100,9 +97,9 @@ class MacAssoc(object):
     def set_arp(self, ip, mac):
         """Установить соответствие mac-ip в системной ARP-таблице"""
         mac = mac.upper()
-        if not self.re_ip.match(ip):
+        if not self._re_ip.match(ip):
             raise ValueError("%s is not valid ip address" % ip)
-        if not self.re_mac.match(mac):
+        if not self._re_mac.match(mac):
             raise ValueError("%s is not valid mac address" % mac)
         #arp = dnet.arp()
         #_ip = dnet.addr(ip)
@@ -114,7 +111,7 @@ class MacAssoc(object):
 
     def del_arp(self, ip):
         """Установить соответствие mac-ip в системной ARP-таблице"""
-        if not self.re_ip.match(ip):
+        if not self._re_ip.match(ip):
             raise ValueError("%s is not valid ip address" % ip)
         #arp = dnet.arp()
         #_ip = dnet.addr(ip)
@@ -153,9 +150,9 @@ class MacAssoc(object):
         """Задание соответствия в файле self.ethers"""
         # Проверка на корректность ip и mac адресов
         mac = mac.upper()
-        if not self.re_ip.match(ip):
+        if not self._re_ip.match(ip):
             raise ValueError("%s is not valid ip address" % ip)
-        if not self.re_mac.match(mac):
+        if not self._re_mac.match(mac):
             raise ValueError("%s is not valid mac address" % mac)
         # Преобразуем фаил в словарь {ip: mac, }
         entries = {}
@@ -215,9 +212,9 @@ class MacAssoc(object):
 
         if self.rulenum(ip) != rulenum:
             raise RuntimeError("bad ipfw rule number for '%s'" % ipfw_str)
-        if not self.re_ip.match(ip):
+        if not self._re_ip.match(ip):
             raise ValueError("%s is not valid ip address" % ip)
-        if not self.re_mac.match(mac):
+        if not self._re_mac.match(mac):
             raise ValueError("%s is not valid mac address" % mac)
 
         return (ip, mac)
@@ -261,9 +258,9 @@ class MacAssoc(object):
         """Задать соответствие mac-ip в ipfw"""
         if not self.ipfw:
             raise RuntimeError("'ipfw' not found in PATH")
-        if not self.re_ip.match(ip):
+        if not self._re_ip.match(ip):
             raise ValueError("%s is not valid ip address" % ip)
-        if not self.re_mac.match(mac):
+        if not self._re_mac.match(mac):
             raise ValueError("%s is not valid mac address" % mac)
 
         self.del_ipfw(ip)
@@ -282,7 +279,7 @@ class MacAssoc(object):
         """Удалить соответствие из ipfw"""
         if not self.ipfw:
             raise RuntimeError("'ipfw' not found in PATH")
-        if not self.re_ip.match(ip):
+        if not self._re_ip.match(ip):
             raise ValueError("%s is not valid ip address" % ip)
 
         rulenum = self.rulenum(ip)

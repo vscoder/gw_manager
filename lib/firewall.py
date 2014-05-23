@@ -5,31 +5,19 @@ import re
 import subprocess
 from distutils import spawn
 
+from gwman import gwman
 
-class Pf(object):
+class Pf(gwman):
     """Управление фаерволом pf"""
 
     def __init__(self, ip):
-        self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
 
-        self.pf = spawn.find_executable("pfctl")
+        self.pf = self.find_exec("pfctl")
 
         self.table = 'clients'
 
         self.ip = ip
 
-
-    @property
-    def ip(self):
-        """Хост для проверки"""
-        return self._ip
-
-    @ip.setter
-    def ip(self, ip):
-        if not self.re_ip.match(ip):
-            raise ValueError("%s is not valid ip address" % ip)
-
-        self._ip = ip
 
     def check_ip(self):
         """Проверить наличие ip в таблице self.table"""
@@ -47,37 +35,16 @@ class Pf(object):
             return False
 
 
-class Ipfw(object):
+class Ipfw(gwman):
     """Работа с фаерволом ipfw"""
 
     def __init__(self, ip):
-        self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
-
-        self.ipfw = spawn.find_executable("ipfw")
-        if not self.ipfw:
-            raise RuntimeError("can't find 'ipfw' executable")
-        
-        self.awk = spawn.find_executable("awk")
-        if not self.awk:
-            raise RuntimeError("can't find 'awk' executable")
-        
+        self.ipfw = self.find_exec("ipfw")
 
         self.tables = (range(2,4))
 
         self.ip = ip
 
-
-    @property
-    def ip(self):
-        """Хост для проверки"""
-        return self._ip
-
-    @ip.setter
-    def ip(self, ip):
-        if not self.re_ip.match(ip):
-            raise ValueError("%s is not valid ip address" % ip)
-
-        self._ip = ip
 
     def pipenum(self, table):
         """Возвращает номер пайпа для ip-адреса из таблицы ipfw"""

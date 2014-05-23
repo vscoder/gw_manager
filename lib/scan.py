@@ -2,66 +2,37 @@
 # -*- coding: utf_8 -*-
 
 import socket
-import re
-
 
 class Scan(object):
-    
-    def __init__(self, host='127.0.0.1', port=80):
-        self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
-        # TODO: Добавить возможность проверки UDP портов
-        self._protocols = ['tcp', ]
 
-        self._host = '127.0.0.1'
-        self._port = 80
+    _protocols = ['tcp', ]
+    
+    def __init__(self, host='127.0.0.1', port=80, timeout=5, proto='tcp'):
+        # TODO: Добавить возможность проверки UDP портов
 
         self.host = host
         self.port = port
-        self.timeout = 5
+        self.timeout = timeout
+        self.proto = proto
 
-    @property
-    def host(self):
-        """Хост для проверки"""
-        return self._host
-
-    @host.setter
-    def host(self, host):
-        if not self.re_ip.match(host):
-            raise ValueError("%s is not valid ip address" % host)
-
-        self._host = host
-
-    @property
-    def port(self):
-        """Порт"""
-        return self._port
-
-    @port.setter
-    def port(self, port):
-        if port.isdigit():
-            port = int(port)
-        else:
-            raise ValueError("'%s' is not valid port number" % port)
-
-        if port <= 0 or port > 65535:
-            raise ValueError("'%s' is not in range 0-65535" % port)
-
-        self._port = port
 
     @property
     def proto(self):
         """Протокол (tcp/udp)"""
         return self._proto
 
-    @property
-    def timeout(self):
-        """Время ожидания echo-ответа или порта"""
-        return self._timeout
+    @proto.setter
+    def proto(self, proto):
+        if proto not in self._protocols:
+            raise ValueError('Scan.proto must be in Scan._protocols')
 
-    @timeout.setter
-    def timeout(self, timeout):
-        """Время ожидания echo-ответа или порта, секунд"""
-        self._timeout = int(timeout)
+        if proto == 'tcp':
+            self.check_port = self.check_tcp_port
+        else:
+            raise RuntimeError("Checking for protocol '%s' not implemented yet" % proto)
+
+        self._proto = proto
+
 
     def check_tcp_port(self):
         """Проверка статуса tcp-порта"""
@@ -69,7 +40,7 @@ class Scan(object):
         port = int(self.port)
 
         sock = socket.socket()
-        sock.settimeout(self._timeout)
+        sock.settimeout(self.timeout)
         try:
             sock.connect((host, port))
             #if results is not None:
@@ -92,11 +63,8 @@ def main():
         help = 'Порт для проверки')
     params = parser.parse_args()
 
-    _host = params.host
-    _port = params.port
-
     # Инициализация
-    scanner = Scan(host = _host, port = _port)
+    scanner = Scan(host = params.host, port = params.port)
     
     if scanner.check_tcp_port():
         print('Open')

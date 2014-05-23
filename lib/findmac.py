@@ -84,12 +84,11 @@ class Switch(gwman):
     def mac_oid(self, mac):
         """Конвертирует mac вида XX:XX:XX:XX:XX:XX
         в десятичное предсятичное представление N.N.N.N.N.N"""
-        mac = mac.upper()
+        mac = self.mac_conv(mac)
         if not self._re_mac.match(mac):
             raise ValueError("Bad mac-address '%s'" % mac)
 
-        mac_str = mac.translate(None, ':-')
-        mac_arr = re.findall('..', mac_str)
+        mac_arr = mac.split(":")
         
         mac_oid_arr = [str(int(hh, base=16)) for hh in mac_arr]
         mac_oid = ".".join(mac_oid_arr)
@@ -110,7 +109,6 @@ class Switch(gwman):
             out = False
 
         if out:
-            #out = out.split("=")[1].split(":")[1].strip()
             out = out.split()[-1]
 
         return out

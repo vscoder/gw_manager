@@ -116,15 +116,6 @@ class Switch(gwman):
 
         return out
 
-class Switches(object):
-    """Получение списка свичей из различных источников"""
-
-    pass
-    
-
-#class model(object):
-#    """Модель свича. Реализует mactable_oid или набор комманд telnet"""
-
 
 def main():
     # Обработка аргументов коммандной строки

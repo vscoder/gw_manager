@@ -69,7 +69,7 @@ class gwman(object):
     @port.setter
     def port(self, port):
         port = str(port)
-        if not port.isdigit():
+        if port.isdigit():
             port = int(port)
         else:
             raise ValueError("'%s' is not valid port number" % port)

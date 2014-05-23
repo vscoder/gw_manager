@@ -41,16 +41,16 @@ class gwman(object):
         return self._host
 
     @host.setter
-    def host(self, host):
-        if not self._re_host.match(host):
-            raise ValueError("%s is not valid host" % host)
+    def host(self, value):
+        if not self._re_host.match(value):
+            raise ValueError("%s is not valid host" % value)
 
-        self._host = host
+        self._host = value
 
 
     @property
     def ip(self):
-        """ip"""
+        """ip адрес"""
         return self._ip
 
     @ip.setter
@@ -64,12 +64,12 @@ class gwman(object):
     @property
     def port(self):
         """Порт хоста (для подключения snmp, telnet etc..."""
-        return self._port
+        return str(self._port)
 
     @port.setter
     def port(self, port):
         port = str(port)
-        if port.isdigit():
+        if not port.isdigit():
             port = int(port)
         else:
             raise ValueError("'%s' is not valid port number" % port)
@@ -82,7 +82,7 @@ class gwman(object):
 
     @property
     def mac(self):
-        """mac"""
+        """mac-адрес"""
         return self._mac
 
     @mac.setter
@@ -97,10 +97,13 @@ class gwman(object):
     @property
     def vlan(self):
         """vlan"""
-        return int(self._vlan)
+        return str(self._vlan)
 
     @vlan.setter
     def vlan(self, vlan):
+        vlan = str(vlan)
+        if not vlan.isdigit():
+            raise ValueError("'%s' is not valid vlan number" % vlan)
         vlan = int(vlan)
         if vlan > 4000 or vlan < 1:
             raise ValueError("vlan must be integer between 1 and 4000")
@@ -111,11 +114,15 @@ class gwman(object):
     @property
     def timeout(self):
         """Время ожидания"""
-        return self._timeout
+        return str(self._timeout)
 
     @timeout.setter
     def timeout(self, timeout):
-        self._timeout = int(timeout)
+        timeout = str(timeout)
+        if not timeout.isdigit():
+            raise ValueError("'%s' is not valid timeout" % timeout)
+
+        self._timeout = timeout
 
 
 def main():

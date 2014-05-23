@@ -141,6 +141,9 @@ def main():
     parser.add_argument('-v', '--vlan', 
         metavar = 'VLAN',
         help = 'Номер vlan для проверки')
+    parser.add_argument('-t', '--timeout', 
+        metavar = 'VLAN',
+        help = 'Время ожидания для проверки')
     parser.add_argument('-e', '--executable', 
         metavar = 'EXECUTABLE',
         help = 'Исполняемый фаил для поиска')
@@ -163,6 +166,9 @@ def main():
     if params.vlan:
         gwc.vlan = params.vlan
         print gwc.vlan
+    if params.timeout:
+        gwc.timeout = params.timeout
+        print gwc.timeout
     if params.executable:
         ex = gwc.find_exec(params.executable)
         print ex

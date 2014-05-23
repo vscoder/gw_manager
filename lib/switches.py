@@ -138,7 +138,7 @@ def main():
             if port:
                 print "MAC '%s' found on %s port %s" % (params.mac, ip, port)
             else:
-                print "MAC '%s' not found on %s" % (params.mac, ip)
+                print "MAC '%s' not found on %s vlan %s" % (params.mac, ip, sw.vlan)
     
 
 if __name__ == "__main__":

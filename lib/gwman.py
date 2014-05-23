@@ -7,14 +7,11 @@ from distutils import spawn
 
 class gwman(object):
     
-    def __init__(self):
-        self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
-        # see RFC 1123, regex found in http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address
-        self.re_host = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
-        self.re_mac = re.compile("^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$")
-        self.re_snmpcommunity = re.compile("^[a-zA-Z1-9_\-]+$")
-
-        self.timeout = 5
+    _re_host = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
+    # see RFC 1123, regex found in http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address
+    _re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
+    _re_mac = re.compile("^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$")
+    _re_community = re.compile("^[a-zA-Z1-9_\-]+$")
 
 
     def find_exec(self, cmd):
@@ -45,7 +42,7 @@ class gwman(object):
 
     @host.setter
     def host(self, host):
-        if not self.re_host.match(host):
+        if not self._re_host.match(host):
             raise ValueError("%s is not valid host" % host)
 
         self._host = host
@@ -58,7 +55,7 @@ class gwman(object):
 
     @ip.setter
     def ip(self, ip):
-        if not self.re_ip.match(ip):
+        if not self._re_ip.match(ip):
             raise ValueError("%s is not valid ip address" % ip)
 
         self._ip = ip

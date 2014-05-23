@@ -74,7 +74,7 @@ class Switch(gwman):
         if model == 'A3100':
             if not self._vlan:
                 raise RuntimeError("Switch.vlan must be set for model 'A3100'")
-            self.mactable_oid = '.1.3.6.1.2.1.17.7.1.2.2.1.2.%d' % self.vlan
+            self.mactable_oid = '.1.3.6.1.2.1.17.7.1.2.2.1.2.%s' % self.vlan
         elif model == 'OTHER':
             self.mactable_oid = '.1.3.6.1.2.1.17.4.3.1.2'
         else:
@@ -103,7 +103,6 @@ class Switch(gwman):
         oid = "%s.%s" % (self.mactable_oid, self.mac_oid(mac))
 
         cmd = [self.snmpget, '-v1', '-c', self.community, self.host, oid]
-        print cmd
         
         try:
             out = subprocess.check_output(cmd)

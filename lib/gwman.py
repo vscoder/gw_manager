@@ -98,6 +98,20 @@ class gwman(object):
 
 
     @property
+    def vlan(self):
+        """vlan"""
+        return int(self._vlan)
+
+    @vlan.setter
+    def vlan(self, vlan):
+        vlan = int(vlan)
+        if vlan > 4000 or vlan < 1:
+            raise ValueError("vlan must be integer between 1 and 4000")
+
+        self._vlan = vlan
+
+
+    @property
     def timeout(self):
         """Время ожидания"""
         return self._timeout
@@ -124,6 +138,9 @@ def main():
     parser.add_argument('-m', '--mac', 
         metavar = 'MAC',
         help = 'Mac-адрес для проверки')
+    parser.add_argument('-v', '--vlan', 
+        metavar = 'VLAN',
+        help = 'Номер vlan для проверки')
     parser.add_argument('-e', '--executable', 
         metavar = 'EXECUTABLE',
         help = 'Исполняемый фаил для поиска')
@@ -133,14 +150,22 @@ def main():
     gwc = gwman()
     if params.host:
         gwc.host = params.host
+        print gwc.host
     if params.ip:
         gwc.ip = params.ip
+        print gwc.ip
     if params.port:
         gwc.port = params.port
+        print gwc.port
     if params.mac:
         gwc.mac = params.mac
+        print gwc.mac
+    if params.vlan:
+        gwc.vlan = params.vlan
+        print gwc.vlan
     if params.executable:
         ex = gwc.find_exec(params.executable)
+        print ex
     
     print "All tests complete sucefully"
     

@@ -101,6 +101,7 @@ class Zabbix(object):
 def main():
     # Обработка аргументов коммандной строки
     import argparse
+    from findmac import Switch
     parser = argparse.ArgumentParser(
         description="""Список свичей""")
     parser.add_argument('-c', '--conf', 
@@ -109,6 +110,12 @@ def main():
     parser.add_argument('-p', '--pattern', 
         metavar = 'PATTERN',
         help = 'Mysql-шаблон ip-адреса')
+    parser.add_argument('-m', '--mac',
+        metavar = 'MAC',
+        help = 'Mac-адрес для поиска')
+    parser.add_argument('-v', '--vlan',
+        metavar = 'VLAN',
+        help = 'Vlan для поиска mac-адреса')
     params = parser.parse_args()
 
     # Инициализация
@@ -117,7 +124,21 @@ def main():
     switches = zabbix.switchlist(params.pattern)
 
     for ip, comm in switches:
-        print "switch ip: %s, community %s" % (ip, comm)
+        if not params.mac:
+            print "switch ip: %s, community %s" % (ip, comm)
+        else:
+            sw = Switch(host = ip)
+            sw.proto = 'snmp'
+            sw.vlan = params.vlan
+            sw.model = 'A3100'
+            sw.community = comm
+
+            port = sw.find_mac(params.mac)
+
+            if port:
+                print "MAC '%s' found on %s port %s" % (params.mac, ip, port)
+            else:
+                print "MAC '%s' not found on %s" % (params.mac, ip)
     
 
 if __name__ == "__main__":

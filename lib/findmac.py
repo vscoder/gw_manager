@@ -5,60 +5,37 @@ import re
 import subprocess
 from distutils import spawn
 
-class Switch(object):
+from gwman import gwman
+
+class Switch(gwman):
     
-    def __init__(self, host='127.0.0.1', port=161):
-        #self.re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
-        # see RFC 1123, regex found in http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address
-        self.re_host = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
-        self.re_mac = re.compile("^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$")
-        self.re_community = re.compile("^[a-zA-Z1-9_\-]+$")
+    def __init__(self, host='127.0.0.1', port=161, community='public'):
 
         self._models = ['A3100', 'OTHER', ]
         self._protocols = ['snmp', 'telnet']
 
-        self.snmpget = spawn.find_executable("snmpget")
-
-        #self._host = '127.0.0.1'
-        #self._port = 161
+        self.snmpget = self.find_exec('snmpget')
 
         self.host = host
         self.port = port
         self.timeout = 5
-        self.community = 'public'
+        self.community = community
 
         self.mactable_oid = ''
 
 
     @property
-    def host(self):
-        """Хост для поиска на нем мак-адреса"""
-        return self._host
+    def community(self):
+        """snmp community"""
+        return self._community
 
-    @host.setter
-    def host(self, host):
-        if not self.re_host.match(host):
-            raise ValueError("%s is not valid ip address" % host)
+    @community.setter
+    def community(self, community):
+        if not self._re_community.match(community):
+            raise ValueError("Bad snmp community '%s'" % community)
 
-        self._host = host
+        self._community = community
 
-    @property
-    def port(self):
-        """Порт хоста (для подключения snmp, telnet etc..."""
-        return self._port
-
-    @port.setter
-    def port(self, port):
-        port = str(port)
-        if port.isdigit():
-            port = int(port)
-        else:
-            raise ValueError("'%s' is not valid port number" % port)
-
-        if port <= 0 or port > 65535:
-            raise ValueError("'%s' is not in range 0-65535" % port)
-
-        self._port = port
 
     @property
     def proto(self):
@@ -85,33 +62,6 @@ class Switch(object):
 
 
     @property
-    def community(self):
-        """snmpget community"""
-        return self._community
-
-    @community.setter
-    def community(self, comm):
-        if not self.re_community.match(comm):
-            raise ValueError("'%s' is not valid community string" % comm)
-
-        self._community = comm
-
-
-    @property
-    def vlan(self):
-        """vlan для поиска mac-адреса"""
-        return int(self._vlan)
-
-    @vlan.setter
-    def vlan(self, vlan):
-        vlan = int(vlan)
-        if 4000 < vlan < 1:
-            raise ValueError("vlan must be integer between 1 and 4000")
-
-        self._vlan = vlan
-
-
-    @property
     def model(self):
         """Модель свича"""
         return self._model
@@ -131,21 +81,11 @@ class Switch(object):
             self.mactable_oid = ''
 
 
-    @property
-    def timeout(self):
-        """Время ожидания подключения"""
-        return self._timeout
-
-    @timeout.setter
-    def timeout(self, timeout):
-        self._timeout = int(timeout)
-
-
     def mac_oid(self, mac):
         """Конвертирует mac вида XX:XX:XX:XX:XX:XX
         в десятичное предсятичное представление N.N.N.N.N.N"""
         mac = mac.upper()
-        if not self.re_mac.match(mac):
+        if not self._re_mac.match(mac):
             raise ValueError("Bad mac-address '%s'" % mac)
 
         mac_str = mac.translate(None, ':-')
@@ -163,6 +103,7 @@ class Switch(object):
         oid = "%s.%s" % (self.mactable_oid, self.mac_oid(mac))
 
         cmd = [self.snmpget, '-v1', '-c', self.community, self.host, oid]
+        print cmd
         
         try:
             out = subprocess.check_output(cmd)

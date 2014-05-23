@@ -5,31 +5,20 @@ import re
 import subprocess
 from distutils import spawn
 
+from gwman import gwman
 
-class Ping(object):
+class Ping(gwman):
     """Пинг средствами комманды ping"""
 
-    def __init__(self, host):
-        # see RFC 1123, regex found in http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address
-        self.re_host = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
+    def __init__(self, host='127.0.0.1'):
 
-        self.ping = spawn.find_executable("ping")
+        self.ping = self.find_exec("ping")
 
         self.host = host
+
         self._count = "4"
-        self._timeout = 1000
+        self.timeout = 1000
 
-
-    @property
-    def host(self):
-        """Хост для проверки"""
-        return self._host
-
-    @host.setter
-    def host(self, host):
-        if not self.re_host.match(host):
-            raise ValueError("%s is not valid host name" % host)
-        self._host = host
 
     @property
     def count(self):
@@ -44,24 +33,11 @@ class Ping(object):
             raise ValueError("%s is not valid ping count" % count)
         self._count = count
 
-    @property
-    def timeout(self):
-        """Время ожидания ответа, ms"""
-        return str(self._timeout)
-
-    @timeout.setter
-    def timeout(self, timeout):
-        timeout = str(timeout)
-        if not timeout.isdigit():
-            raise ValueError("%s is not valid timeout" % timeout)
-        self._timeout = timeout
 
     def ping_host(self):
         """Выполнить пинг хоста host"""
-        if not self._host:
+        if not self.host:
             raise RuntimeError("host must be set")
-        if not self.ping:
-            raise RuntimeError("can't find 'ping' executable")
         
         cmd = [self.ping, '-c', self.count, '-W', self.timeout, self.host]
         PIPE = subprocess.PIPE

@@ -10,11 +10,11 @@
 <div>
 
 <form name="find_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
+Найти мак-адрес в arp таблице<br>
 <table>
 <tr>
 	<td>
-		Найти мак-адрес в arp таблице<br>
-		ip
+		Часть IP/MAC адреса
 	</td><td>
 	</td>
 </tr>
@@ -28,12 +28,14 @@
 </table>
 </form>
 
+<hr>
+
 <form name="del_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
+Удалить привязку mac-ip<br>
 <table>
 <tr>
 	<td>
-		Удалить привязку mac-ip<br>
-		ip
+		IP адрес
 	</td><td>
 	</td>
 </tr>
@@ -47,15 +49,17 @@
 </table>
 </form>
 
+<hr>
+
 <form name="set_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
 <input name="set" type="hidden" value=True>
+Задать соответствие mac-ip<br>
 <table>
 <tr>
 	<td>
-		Задать соответствие mac-ip<br>
-		ip
+		IP адрес
 	</td><td>
-		mac
+		MAC адрес
 	</td><td>
 	</td>
 </tr>
@@ -71,14 +75,16 @@
 </table>
 </form>
 
+<hr>
+
 <form name="scan_tcp" action="/cgi-bin/scanner.cgi" method="get">
+Проверить tcp порт<br>
 <table>
 <tr>
 	<td>
-		Проверить tcp порт<br>
-		ip
+		IP адрес
 	</td><td>
-		port
+		Номер порта
 	</td><td>
 	</td>
 </tr>
@@ -94,12 +100,14 @@
 </table>
 </form>
 
+<hr>
+
 <form name="check_ip" action="/cgi-bin/check_ip.cgi" method="get">
+Проверить статус IP адреса<br>
 <table>
 <tr>
 	<td>
-		Проверить статус IP адреса<br>
-		ip
+		IP адрес
 	</td><td>
 	</td>
 </tr>
@@ -113,14 +121,16 @@
 </table>
 </form>
 
+<hr>
+
 <form name="ping" action="/cgi-bin/ping.cgi" method="get">
+Пинг хоста<br>
 <table>
 <tr>
 	<td>
-		Пинг хоста<br>
-		host
+		HOST/IP
 	</td><td>
-		count
+		Количество пакетов
 	</td><td>
 	</td>
 </tr>
@@ -136,16 +146,18 @@
 </table>
 </form>
 
+<hr>
+
 <form name="findmac" action="/cgi-bin/findmac.cgi" method="get">
+Поиск mac-адреса на свичах<br>
 <table>
 <tr>
 	<td>
-		Поиск mac-адреса на свичах<br>
-		switch ip pattern
+		Часть IP адреса свича
 	</td><td>
-		mac
+		MAC адрес
 	</td><td>
-		vlan
+		VLAN
 	</td><td>
 	</td>
 </tr>

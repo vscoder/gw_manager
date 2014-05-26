@@ -41,24 +41,27 @@ if find:
     entries = macs.find_arp(find)
 
     print "<table>"
-    for ip, mac in entries.items():
-        print "<tr><td>%s</td><td>%s</td></tr>\n" % (ip, mac)
+    for _ip, _mac in entries.items():
+        print "<tr><td>%s</td><td>%s</td></tr>\n" % (_ip, _mac)
     print "</table>"
 elif rm:
+    macs.mac = rm
     if macs.arptype == 'ethers':
-            macs.del_arp(rm)
-    if macs.del(rm):
-        print "OK: del association from '%s' for ip: '%s'" % (macs.arptype, rm)
-        logging.info("OK: del association from '%s' for ip: '%s'" % (macs.arptype, rm))
+            macs.del_arp()
+    if macs.delete():
+        print "OK: del association from system arp table for ip: '%s'" % (macs.mac)
+        logging.info("OK: del association from system arp table for ip: '%s'" % (macs.mac))
     else:
-        print "ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, rm)
-        logging.warning("ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, rm))
+        print "ERROR: del association from system arp table for ip: '%s'" % (macs.mac)
+        logging.warning("ERROR: del association from system arp table for ip: '%s'" % (macs.mac))
 elif add:
-    if macs.set(ip, mac):
+    macs.ip = ip
+    macs.mac = mac
+    if macs.set():
         if macs.arptype == 'ethers':
             macs.ethers_to_arp()
-        print "OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac)
-        logging.info("OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac))
+        print "OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
+        logging.info("OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac))
     else:
-        print "ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac)
-        loggini.warning("ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac))
+        print "ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
+        loggini.warning("ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac))

@@ -75,17 +75,6 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
     #    return SocketServer.BaseRequestHandler.finish(self)
 
     
-    def do_scan(self, *args, **kwargs):
-        """scan tcp port"""
-        host, port = args
-        scanner = self.Scan(host = host, port = port)
-        if scanner.check_tcp_port():
-            result = 'OPEN'
-        else:
-            result = 'CLOSED'
-
-        return result
-
     def check_ip(self, ip):
         """Check block status and shape of ip address"""
         # PF
@@ -114,8 +103,20 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
                  """ % {'ip': ip, 'status': status, 'in': shape_in, 'out': shape_out}
 
         return result
-        
 
+    
+    def do_scan(self, *args, **kwargs):
+        """scan tcp port"""
+        host, port = args
+        scanner = self.Scan(host = host, port = port)
+        if scanner.check_tcp_port():
+            result = 'OPEN'
+        else:
+            result = 'CLOSED'
+
+        return result
+
+       
     def run_cmd(self, cmd):
         """run shell cmd as current user"""
         run = tuple(cmd.split())

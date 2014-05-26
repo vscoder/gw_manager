@@ -22,29 +22,29 @@ mac = arguments.getvalue('mac')
 vlan = arguments.getvalue('vlan')
 
 # Инициализация
-zabbix = Zabbix(conf = params.conf)
+zabbix = Zabbix(conf = 'conf/main.conf')
 
-switches = zabbix.switchlist(params.pattern)
+switches = zabbix.switchlist(pattern)
 
 result = []
 
 for ip, comm in switches:
     sw = Switch(host = ip)
     sw.proto = 'snmp'
-    sw.vlan = params.vlan
+    sw.vlan = vlan
     sw.model = 'A3100'
     sw.community = comm
 
-    port = sw.find_mac(params.mac)
+    port = sw.find_mac(mac)
 
     if port:
-        result.append("MAC '%s' found on %s port %s" % (params.mac, ip, port))
+        result.append("MAC '%s' found on %s port %s" % (mac, ip, port))
     else:
-        result.append("MAC '%s' not found on %s vlan %s" % (params.mac, ip, sw.vlan))
+        result.append("MAC '%s' not found on %s vlan %s" % (mac, ip, sw.vlan))
 
 
 print "Content-Type: text/html;charset=utf-8"
 print
 
 print "<br>".join(result)
-logging.info(out)
+logging.info("\n".join(result))

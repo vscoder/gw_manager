@@ -13,10 +13,10 @@ from gwman import gwman
 
 class MacAssoc(gwman):
     """Управление привязкой mac-адресов к ip-адресам"""
+    _arptypes = ['ethers', 'ipfw', 'arp']
 
     def __init__(self, arptype):
         # Доступные типы привязки
-        self._arptypes = ['ethers', 'ipfw', 'arp']
 
         self.arptype = arptype
 
@@ -45,18 +45,18 @@ class MacAssoc(gwman):
             self.find = self.find_ethers
             self.get = self.get_ethers
             self.set = self.set_ethers
-            self.del = self.del_ethers
+            self.delete = self.del_ethers
         elif self._arptype == 'arp':
             self.find = self.find_arp
             self.get = self.get_arp
             self.set = self.set_arp
-            self.del = self.del_arp
+            self.delete = self.del_arp
         elif self._arptype == 'ipfw':
             self._ipfw = self.find_exec("ipfw")
             self.find = self.find_ipfw
             self.get = self.get_ipfw
             self.set = self.set_ipfw
-            self.del = self.del_ipfw
+            self.delete = self.del_ipfw
         else:
             raise ValueError("%s is not valid arptype" % self._arptype)
 
@@ -184,14 +184,37 @@ class MacAssoc(gwman):
         return result
 
 
-    def set_ethers(self, ip, mac):
+    #def set_ethers(self, ip, mac):
+    #    """Задание соответствия в файле self.ethers"""
+    #    # Проверка на корректность ip и mac адресов
+    #    mac = mac.upper()
+    #    if not self._re_ip.match(ip):
+    #        raise ValueError("%s is not valid ip address" % ip)
+    #    if not self._re_mac.match(mac):
+    #        raise ValueError("%s is not valid mac address" % mac)
+    #    # Преобразуем фаил в словарь {ip: mac, }
+    #    entries = {}
+    #    with open(self.ethers, 'r') as f:
+    #        for line in f:
+    #            _ip, _mac = line.split()
+    #            entries[_ip] = _mac.upper()
+    #    # Изменяем запись
+    #    entries[ip] = mac
+
+    #    # Перезаписываем фаил
+    #    with open(self.ethers, 'w') as f:
+    #        for _ip, _mac in entries.items():
+    #            f.write("%s\t%s\n" % (_ip, _mac))
+
+    #    return True
+    
+    def set_ethers(self):
         """Задание соответствия в файле self.ethers"""
         # Проверка на корректность ip и mac адресов
-        mac = mac.upper()
-        if not self._re_ip.match(ip):
-            raise ValueError("%s is not valid ip address" % ip)
-        if not self._re_mac.match(mac):
-            raise ValueError("%s is not valid mac address" % mac)
+        if not self.mac:
+            raise RuntimeError("MacAssoc.mac must be set first")
+        if not self.ip:
+            raise RuntimeError("MacAssoc.ip must be set first")
         # Преобразуем фаил в словарь {ip: mac, }
         entries = {}
         with open(self.ethers, 'r') as f:
@@ -199,7 +222,7 @@ class MacAssoc(gwman):
                 _ip, _mac = line.split()
                 entries[_ip] = _mac.upper()
         # Изменяем запись
-        entries[ip] = mac
+        entries[self.ip] = self.mac
 
         # Перезаписываем фаил
         with open(self.ethers, 'w') as f:
@@ -209,17 +232,40 @@ class MacAssoc(gwman):
         return True
         
 
-    def del_ethers(self, addr):
+    #def del_ethers(self, addr):
+    #    """Удаление соответствия из файла self.ethers"""
+    #    # Преобразуем фаил в словарь {ip: mac, }
+    #    # и если строка соответствует поиску не добавляем ее
+    #    addr = addr.upper()
+    #    entries = {}
+    #    deleted = False
+    #    with open(self.ethers, 'r') as f:
+    #        for line in f:
+    #            _ip, _mac = line.split()
+    #            if addr == _ip or addr == _mac:
+    #                deleted = True
+    #            else:
+    #                entries[_ip] = _mac.upper()
+
+    #    # Перезаписываем фаил
+    #    with open(self.ethers, 'w') as f:
+    #        for _ip, _mac in entries.items():
+    #            f.write("%s\t%s\n" % (_ip, _mac))
+
+    #    return deleted
+
+    def del_ethers(self):
         """Удаление соответствия из файла self.ethers"""
+        if not self.ip:
+            raise RuntimeError("MacAssoc.ip must be set first")
         # Преобразуем фаил в словарь {ip: mac, }
-        # и если строка соответствует поиску не добавляем ее
-        addr = addr.upper()
+        # и если ip соответствует поиску не добавляем ее
         entries = {}
         deleted = False
         with open(self.ethers, 'r') as f:
             for line in f:
                 _ip, _mac = line.split()
-                if addr == _ip or addr == _mac:
+                if ip == _ip:
                     deleted = True
                 else:
                     entries[_ip] = _mac.upper()
@@ -417,20 +463,18 @@ if __name__ == "__main__":
     
     import argparse
 
-    macs = MacAssoc()
-
     parser = argparse.ArgumentParser(
         description="""Привязка ip-адресов к mac-адресам
                        Все привязки дублируются в --ethers""")
     parser.add_argument('-t', '--arptype',
                         metavar = 'TYPE',
-                        default = macs._arptypes[0],
-                        choices = macs._arptypes,
-                        help = 'Способ привязки (%s)' % ", ".join(macs._arptypes))
+                        default = MacAssoc._arptypes[0],
+                        choices = MacAssoc._arptypes,
+                        help = 'Способ привязки (%s)' % ", ".join(MacAssoc._arptypes))
     gr_ethers = parser.add_argument_group("arptype = ethers")
     gr_ethers.add_argument('-e', '--ethers',
                         metavar = 'FILE',
-                        default = macs.ethers,
+                        default = MacAssoc.ethers,
                         help = 'Фаил с соответствиями mac\tip')
     gr_action = parser.add_mutually_exclusive_group(required=True)
     gr_action.add_argument('-f', '--find', 
@@ -456,7 +500,7 @@ if __name__ == "__main__":
                         help = 'MAC-адрес для соответствия')
     params = parser.parse_args()
 
-    macs.arptype = params.arptype
+    macs = MacAssoc(params.arptype)
     sys.stderr.write("arptype: %s\n" % macs.arptype)
 
     # FIND
@@ -513,7 +557,9 @@ if __name__ == "__main__":
     if params.set:
         #if macs.arptype != 'ethers':
         #    macs.set_ethers(ip, mac)
-        macs.set(ip, mac)
+        macs.ip = ip
+        macs.mac = mac
+        macs.set()
         if macs.arptype == 'ethers':
             macs.ethers_to_arp()
         print "set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac)
@@ -522,7 +568,8 @@ if __name__ == "__main__":
     if rm is not None:
         #if macs.arptype != 'ethers':
         #    macs.del_ethers(rm)
-        macs.del(rm)
+        macs.ip = rm
+        macs.delete()
         if macs.arptype == 'ethers':
             macs.ethers_to_arp()
         print "del association from '%s' for ip: '%s'" % (macs.arptype, rm)

@@ -14,16 +14,15 @@ from gwman import gwman
 class MacAssoc(gwman):
     """Управление привязкой mac-адресов к ip-адресам"""
 
-    def __init__(self):
-        self._arptypes = ['ethers', 'ipfw', 'arp', 'script']
+    def __init__(self, arptype):
+        # Доступные типы привязки
+        self._arptypes = ['ethers', 'ipfw', 'arp']
 
-        self.sudo = self.find_exec("sudo")
+        self.arptype = arptype
+
         self.arp = self.find_exec("arp")
-        self.ipfw = self.find_exec("ipfw")
 
-        self._arptype = ""
         self._ethers = "/etc/ethers"
-        self._script = "echo"
         self._arptable = {}
 
         self.ipfw_start = 600
@@ -41,6 +40,25 @@ class MacAssoc(gwman):
         if arptype not in self._arptypes:
             raise ValueError("wrong arp type")
         self._arptype = arptype
+
+        if self._arptype == 'ethers':
+            self.find = self.find_ethers
+            self.get = self.get_ethers
+            self.set = self.set_ethers
+            self.del = self.del_ethers
+        elif self._arptype == 'arp':
+            self.find = self.find_arp
+            self.get = self.get_arp
+            self.set = self.set_arp
+            self.del = self.del_arp
+        elif self._arptype == 'ipfw':
+            self._ipfw = self.find_exec("ipfw")
+            self.find = self.find_ipfw
+            self.get = self.get_ipfw
+            self.set = self.set_ipfw
+            self.del = self.del_ipfw
+        else:
+            raise ValueError("%s is not valid arptype" % self._arptype)
 
 
     @property
@@ -305,74 +323,74 @@ class MacAssoc(gwman):
                 f.write("%s\t%s\n" % (_ip, _mac))
 
 
-    def find_assoc(self, addr):
-        """Команда для поиска записи
-        в текущем хранилище ARP-привязок"""
-        if not addr:
-            addr = ""
-        addr = addr.upper()
-        if self.arptype == 'ethers':
-            return self.find_ethers(addr)
-        elif self.arptype == 'arp':
-            return self.find_arp(addr)
-        elif self.arptype == 'ipfw':
-            return self.find_ipfw(addr)
-        elif self.arptype == 'script':
-            pass
-
-        else:
-            pass
-
-
-    def get_assoc(self, addr):
-        """Команда для получения записи
-        из текущего хранилища ARP-привязок"""
-        addr = addr.upper()
-        if self.arptype == 'ethers':
-            return self.get_ethers(addr)
-        elif self.arptype == 'arp':
-            return self.get_arp(addr)
-        elif self.arptype == 'ipfw':
-            return self.get_ipfw(addr)
-        elif self.arptype == 'script':
-            pass
-
-        else:
-            pass
+    #def find_assoc(self, addr):
+    #    """Команда для поиска записи
+    #    в текущем хранилище ARP-привязок"""
+    #    if not addr:
+    #        addr = ""
+    #    addr = addr.upper()
+    #    if self.arptype == 'ethers':
+    #        return self.find_ethers(addr)
+    #    elif self.arptype == 'arp':
+    #        return self.find_arp(addr)
+    #    elif self.arptype == 'ipfw':
+    #        return self.find_ipfw(addr)
+    #    elif self.arptype == 'script':
+    #        pass
+    #
+    #    else:
+    #        pass
 
 
-    def set_assoc(self, ip, mac):
-        """Команда для добавления записи
-        в текущее хранилище ARP-привязок"""
-        mac = mac.upper()
-        if self.arptype == 'ethers':
-            self.set_ethers(ip, mac)
-            return (ip, mac)
-        elif self.arptype == 'arp':
-            self.set_arp(ip, mac)
-        elif self.arptype == 'ipfw':
-            self.set_ipfw(ip, mac)
-        elif self.arptype == 'script':
-            pass
+    #def get_assoc(self, addr):
+    #    """Команда для получения записи
+    #    из текущего хранилища ARP-привязок"""
+    #    addr = addr.upper()
+    #    if self.arptype == 'ethers':
+    #        return self.get_ethers(addr)
+    #    elif self.arptype == 'arp':
+    #        return self.get_arp(addr)
+    #    elif self.arptype == 'ipfw':
+    #        return self.get_ipfw(addr)
+    #    elif self.arptype == 'script':
+    #        pass
+    #
+    #    else:
+    #        pass
 
-        else:
-            pass
+
+    #def set_assoc(self, ip, mac):
+    #    """Команда для добавления записи
+    #    в текущее хранилище ARP-привязок"""
+    #    mac = mac.upper()
+    #    if self.arptype == 'ethers':
+    #        self.set_ethers(ip, mac)
+    #        return (ip, mac)
+    #    elif self.arptype == 'arp':
+    #        self.set_arp(ip, mac)
+    #    elif self.arptype == 'ipfw':
+    #        self.set_ipfw(ip, mac)
+    #    elif self.arptype == 'script':
+    #        pass
+    #
+    #    else:
+    #        pass
 
     
-    def del_assoc(self, ip):
-        """Команда для удаления записи
-        из текущего хранилища ARP-привязок"""
-        if self.arptype == 'ethers':
-            return self.del_ethers(ip)
-        elif self.arptype == 'arp':
-            return self.del_arp(ip)
-        elif self.arptype == 'ipfw':
-            return self.del_ipfw(ip)
-        elif self.arptype == 'script':
-            pass
-
-        else:
-            pass
+    #def del_assoc(self, ip):
+    #    """Команда для удаления записи
+    #    из текущего хранилища ARP-привязок"""
+    #    if self.arptype == 'ethers':
+    #        return self.del_ethers(ip)
+    #    elif self.arptype == 'arp':
+    #        return self.del_arp(ip)
+    #    elif self.arptype == 'ipfw':
+    #        return self.del_ipfw(ip)
+    #    elif self.arptype == 'script':
+    #        pass
+    #
+    #    else:
+    #        pass
 
 
 if __name__ == "__main__":
@@ -389,10 +407,6 @@ if __name__ == "__main__":
                         default = macs._arptypes[0],
                         choices = macs._arptypes,
                         help = 'Способ привязки (%s)' % ", ".join(macs._arptypes))
-    gr_script = parser.add_argument_group("arptype = script")
-    gr_script.add_argument('-s', '--script',
-                        metavar = 'FILE',
-                        help = 'Скрипт при --arptype=script')
     gr_ethers = parser.add_argument_group("arptype = ethers")
     gr_ethers.add_argument('-e', '--ethers',
                         metavar = 'FILE',
@@ -439,11 +453,6 @@ if __name__ == "__main__":
     else:
         get = None
 
-    # SCRIPT
-    if type(params.script) == str:
-        script = params.script
-        sys.stderr.write("script: %s\n" % script)
-
     # ETHERS
     if type(params.ethers) == str:
         macs.ethers = params.ethers
@@ -467,18 +476,14 @@ if __name__ == "__main__":
 
     # FIND
     if find is not None:
-        entries = macs.find_assoc(find)
+        entries = macs.find(find)
         for ip, mac in entries.items():
             #rulenum = macs.rulenum(ip)
             print "in %s found ip: %s\tmac: %s" % (macs.arptype, ip, mac)
-            #if arptype == 'script':
-            #    if (rulenum - macs.ipfw_start) > 128: continue
-            #    output = subprocess.check_output([script, ip, mac])
-            #    print output
 
     # GET
     if get is not None:
-        result = macs.get_assoc(get)
+        result = macs.get(get)
         if result:
             print "in %s found ip: %s\tmac: %s" % (macs.arptype, result[0], result[1])
         else:
@@ -488,7 +493,7 @@ if __name__ == "__main__":
     if params.set:
         #if macs.arptype != 'ethers':
         #    macs.set_ethers(ip, mac)
-        macs.set_assoc(ip, mac)
+        macs.set(ip, mac)
         if macs.arptype == 'ethers':
             macs.ethers_to_arp()
         print "set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac)
@@ -497,7 +502,7 @@ if __name__ == "__main__":
     if rm is not None:
         #if macs.arptype != 'ethers':
         #    macs.del_ethers(rm)
-        macs.del_assoc(rm)
+        macs.del(rm)
         if macs.arptype == 'ethers':
             macs.ethers_to_arp()
         print "del association from '%s' for ip: '%s'" % (macs.arptype, rm)

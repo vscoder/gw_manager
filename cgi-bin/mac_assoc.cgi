@@ -18,8 +18,7 @@ import logging
 logging.basicConfig(filename='log/mac_assoc.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 # Инициализация класса
-macs = MacAssoc()
-macs.arptype = 'ethers'
+macs = MacAssoc('ethers')
 
 # Разбор переданных аргументов
 arguments = cgi.FieldStorage()
@@ -48,14 +47,14 @@ if find:
 elif rm:
     if macs.arptype == 'ethers':
             macs.del_arp(rm)
-    if macs.del_assoc(rm):
+    if macs.del(rm):
         print "OK: del association from '%s' for ip: '%s'" % (macs.arptype, rm)
         logging.info("OK: del association from '%s' for ip: '%s'" % (macs.arptype, rm))
     else:
         print "ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, rm)
         logging.warning("ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, rm))
 elif add:
-    if macs.set_assoc(ip, mac):
+    if macs.set(ip, mac):
         if macs.arptype == 'ethers':
             macs.ethers_to_arp()
         print "OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, ip, mac)

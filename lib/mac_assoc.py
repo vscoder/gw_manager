@@ -265,7 +265,7 @@ class MacAssoc(gwman):
         with open(self.ethers, 'r') as f:
             for line in f:
                 _ip, _mac = line.split()
-                if ip == _ip:
+                if self.ip == _ip:
                     deleted = True
                 else:
                     entries[_ip] = _mac.upper()

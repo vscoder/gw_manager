@@ -88,7 +88,7 @@ class gwman(object):
     @mac.setter
     def mac(self, mac):
         mac = self.mac_conv(mac)
-        if not self.re_mac.match(mac):
+        if not self._re_mac.match(mac):
             raise ValueError("%s is not valid mac address" % mac)
 
         self._mac = mac

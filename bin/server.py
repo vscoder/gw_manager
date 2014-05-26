@@ -66,14 +66,14 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
             result = self.check_ip(ip)
         if cmd == "mac_ass":
             action = args[0]
-            if action == find:
+            if action == 'find':
                 addr = args[1]
                 result = self.mac_find(addr)
-            elif action == add:
+            elif action == 'add':
                 ip = args[1]
                 mac = args[2]
                 result = self.mac_add(ip, mac)
-            elif action == delete:
+            elif action == 'del':
                 ip = args[1]
                 result = self.mac_del(ip)
             else:
@@ -89,16 +89,16 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
     #    self.logger.debug('finish')
     #    return SocketServer.BaseRequestHandler.finish(self)
 
-    def mac_find(self, ip)
+    def mac_find(self, ip):
         """Find ip-mac association"""
         macs = MacAssoc('arp')
         rows = macs.find(ip)
 
         lines = [" ".join(row) for row in rows.items()]
         result = "\n".join(lines)
-        return lines
+        return result
 
-    def mac_add(self, ip, mac)
+    def mac_add(self, ip, mac):
         macs = MacAssoc('ethers')
         macs.ip = ip
         macs.mac = mac
@@ -111,7 +111,7 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
 
         return result
 
-    def mac_del(self, ip)
+    def mac_del(self, ip):
         macs = MacAssoc('ethers')
         macs.ip = ip
 

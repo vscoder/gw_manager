@@ -308,7 +308,7 @@ class MacAssoc(gwman):
         if not self.ipfw:
             raise RuntimeError("'ipfw' not found in PATH")
         ipfw_range = "%s-%s" % (self.ipfw_start, self.ipfw_start + 255)
-        rules = subprocess.check_output([self.sudo, self.ipfw, 'list', ipfw_range])
+        rules = subprocess.check_output([self.ipfw, 'list', ipfw_range])
         arptable = {}
         for rule in rules:
             ip, mac = self.split_ipfw(rule)
@@ -350,7 +350,7 @@ class MacAssoc(gwman):
         self.del_ipfw(ip)
 
         # ipfw add $RULENUM deny log logamount 5 ip from $IP to any out via ifwan0 not MAC any $MAC mac-type ipv4
-        result = subprocess.call([self.sudo, self.ipfw,
+        result = subprocess.call([self.ipfw,
                                   'add', rulenum, 'deny',
                                   'log', 'logamount', '5',
                                   'ip', 'from', ip, 'to', 'any',
@@ -368,16 +368,14 @@ class MacAssoc(gwman):
 
         rulenum = self.rulenum(ip)
         
-        result = subprocess.call([self.sudo, self.ipfw, 'delete', rulenum])
+        result = subprocess.call([self.ipfw, 'delete', rulenum])
 
         return result
 
     def ethers_to_arp(self):
         """Запись фаила ethers в системную arp-таблицу"""
-        if not self.sudo or not self.arp:
-            raise RuntimeError("'sudo' or 'arp' not found in PATH")
         if os.path.isfile(self.ethers):
-            return subprocess.call([self.sudo, self.arp, "-f", self.ethers])
+            return subprocess.call([self.arp, "-f", self.ethers])
         else:
             return False
 

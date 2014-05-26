@@ -123,10 +123,11 @@ def main():
     
     switches = zabbix.switchlist(params.pattern)
 
-    for ip, comm in switches:
-        if not params.mac:
+    if not params.mac:
+        for ip, comm in switches:
             print "switch ip: %s, community %s" % (ip, comm)
-        else:
+    else:
+        for ip, comm in switches:
             sw = Switch(host = ip)
             sw.proto = 'snmp'
             sw.vlan = params.vlan

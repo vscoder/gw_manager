@@ -10,6 +10,7 @@
 <div>
 
 <form name="find_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
+<input name="action" type="hidden" value="find">
 Найти мак-адрес в arp таблице<br>
 <table>
 <tr>
@@ -20,7 +21,7 @@
 </tr>
 <tr>
 	<td>
-		<input name="find" type="text">
+		<input name="addr" type="text">
 	</td><td>
 		<input type="submit" value="Найти">
 	</td>
@@ -31,6 +32,7 @@
 <hr>
 
 <form name="del_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
+<input name="action" type="hidden" value="del">
 Удалить привязку mac-ip<br>
 <table>
 <tr>
@@ -41,7 +43,7 @@
 </tr>
 <tr>
 	<td>
-		<input name="del" type="text">
+		<input name="ip" type="text">
 	</td><td>
 		<input type="submit" value="Удалить">
 	</td>
@@ -52,7 +54,7 @@
 <hr>
 
 <form name="set_assoc" action="/cgi-bin/mac_assoc.cgi" method="get">
-<input name="set" type="hidden" value=True>
+<input name="action" type="hidden" value="add">
 Задать соответствие mac-ip<br>
 <table>
 <tr>

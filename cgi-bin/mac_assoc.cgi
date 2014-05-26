@@ -1,67 +1,67 @@
 #!/usr/bin/env python2
 # -*- coding: utf_8 -*-
 
+import sys
 import cgi
+import socket
 import cgitb
 cgitb.enable()
 
-import sys
-import os
-
 import logging
 
-sys.path.insert(0, "./lib")
-from mac_assoc import MacAssoc
+#sys.path.insert(0, "./lib")
 
 # Инициализация логирования
-import logging
 logging.basicConfig(filename='log/mac_assoc.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
-
-# Инициализация класса
-macs = MacAssoc('ethers')
 
 # Разбор переданных аргументов
 arguments = cgi.FieldStorage()
-# find
-find = arguments.getvalue('find')
-# remove
-rm = arguments.getvalue('del')
-# set assignment
-add = arguments.getvalue('set')
+action = arguments.getvalue('action')
+addr = arguments.getvalue('addr')
 ip = arguments.getvalue('ip')
 mac = arguments.getvalue('mac')
-if mac:
-    mac = mac.replace("-",":")
 
+error = None
+# Формирование комманды для передачи серверу
+if action == 'find':
+    if not addr:
+        error = "ERROR: 'addr' must be set!"
+    cmd = "mac_ass %s %s" % (action, addr)
+elif action == 'add':
+    if not ip or not mac:
+        error = "ERROR: IP and MAC must be set"
+    cmd = "mac_ass %s %s %s" % (action, ip, mac)
+elif action == 'del':
+    if not ip:
+        error = "ERROR: IP must be set"
+    cmd = "mac_ass %s %s" % (action, ip)
+else:
+    error = "ERROR: wrong action '%s'" % action
+logging.info(cmd)
+
+if error:
+    raise RuntimeError(error)
+
+# Передача команды на сервер и получение результата
+HOST, PORT = "localhost", 1237
+data = cmd
+
+# Create a socket (SOCK_STREAM means a TCP socket)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+try:
+    # Connect to server and send data
+    sock.connect((HOST, PORT))
+    sock.sendall(data + "\n")
+
+    # Receive data from the server and shut down
+    received = sock.recv(16384)
+finally:
+    sock.close()
 
 print "Content-Type: text/html;charset=utf-8"
 print
 
-if find:
-    entries = macs.find_arp(find)
-
-    print "<table>"
-    for _ip, _mac in entries.items():
-        print "<tr><td>%s</td><td>%s</td></tr>\n" % (_ip, _mac)
-    print "</table>"
-elif rm:
-    macs.mac = rm
-    if macs.arptype == 'ethers':
-            macs.del_arp()
-    if macs.delete():
-        print "OK: del association from system arp table for ip: '%s'" % (macs.mac)
-        logging.info("OK: del association from system arp table for ip: '%s'" % (macs.mac))
-    else:
-        print "ERROR: del association from system arp table for ip: '%s'" % (macs.mac)
-        logging.warning("ERROR: del association from system arp table for ip: '%s'" % (macs.mac))
-elif add:
-    macs.ip = ip
-    macs.mac = mac
-    if macs.set():
-        if macs.arptype == 'ethers':
-            macs.ethers_to_arp()
-        print "OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
-        logging.info("OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac))
-    else:
-        print "ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
-        loggini.warning("ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac))
+#print "Sent:     {}".format(data)
+print "<br>".join(received.split("\n"))
+logging.info(received)

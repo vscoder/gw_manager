@@ -16,6 +16,7 @@ sys.path.insert(0, "./lib")
 from scan import Scan
 from firewall import Pf
 from firewall import Ipfw
+from mac_assoc import MacAssoc
 
 
 class GwManagerHandler(SocketServer.StreamRequestHandler):
@@ -63,6 +64,20 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
         if cmd == "check_ip":
             ip = args[0]
             result = self.check_ip(ip)
+        if cmd == "mac_ass":
+            action = args[0]
+            if action == find:
+                addr = args[1]
+                result = self.mac_find(addr)
+            elif action == add:
+                ip = args[1]
+                mac = args[2]
+                result = self.mac_add(ip, mac)
+            elif action == delete:
+                ip = args[1]
+                result = self.mac_del(ip)
+            else:
+                result = "bad action '%s'" % action
         else:
             result = "bad input data '%s'" % data
 
@@ -73,6 +88,40 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
     #def finish(self):
     #    self.logger.debug('finish')
     #    return SocketServer.BaseRequestHandler.finish(self)
+
+    def mac_find(self, ip)
+        """Find ip-mac association"""
+        macs = MacAssoc('arp')
+        rows = macs.find(ip)
+
+        lines = [" ".join(row) for row in rows.items()]
+        result = "\n".join(lines)
+        return lines
+
+    def mac_add(self, ip, mac)
+        macs = MacAssoc('ethers')
+        macs.ip = ip
+        macs.mac = mac
+
+        if macs.set():
+            macs.ethers_to_arp()
+            result = "OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
+        else:
+            result = "ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
+
+        return result
+
+    def mac_del(self, ip)
+        macs = MacAssoc('ethers')
+        macs.ip = ip
+
+        if macs.delete():
+            macs.ethers_to_arp()
+            result = "OK: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
+        else:
+            result = "ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
+
+        return result
 
     
     def check_ip(self, ip):

@@ -112,29 +112,49 @@ class MacAssoc(gwman):
                 result = (ip, mac)
         return result
 
-    def set_arp(self, ip, mac):
+    #def set_arp(self, ip, mac):
+    #    """Установить соответствие mac-ip в системной ARP-таблице"""
+    #    mac = mac.upper()
+    #    if not self._re_ip.match(ip):
+    #        raise ValueError("%s is not valid ip address" % ip)
+    #    if not self._re_mac.match(mac):
+    #        raise ValueError("%s is not valid mac address" % mac)
+    #    #arp = dnet.arp()
+    #    #_ip = dnet.addr(ip)
+    #    #_mac = dnet.addr(mac)
+    #    #added = arp.add(_ip, _mac)
+    #    added = subprocess.call([self.sudo, self.arp, "-s", ip, mac])
+    #    return added
+
+    def set_arp(self):
         """Установить соответствие mac-ip в системной ARP-таблице"""
-        mac = mac.upper()
-        if not self._re_ip.match(ip):
-            raise ValueError("%s is not valid ip address" % ip)
-        if not self._re_mac.match(mac):
-            raise ValueError("%s is not valid mac address" % mac)
-        #arp = dnet.arp()
-        #_ip = dnet.addr(ip)
-        #_mac = dnet.addr(mac)
-        #added = arp.add(_ip, _mac)
-        added = subprocess.call([self.sudo, self.arp, "-s", ip, mac])
+        if not self.mac:
+            raise RuntimeError("MacAssoc.mac must be set first")
+        if not self.ip:
+            raise RuntimeError("MacAssoc.ip must be set first")
+        arp = dnet.arp()
+        _ip = dnet.addr(self.ip)
+        _mac = dnet.addr(self.mac)
+        added = arp.add(_ip, _mac)
         return added
 
+    #def del_arp(self, ip):
+    #    """Установить соответствие mac-ip в системной ARP-таблице"""
+    #    if not self._re_ip.match(ip):
+    #        raise ValueError("%s is not valid ip address" % ip)
+    #    #arp = dnet.arp()
+    #    #_ip = dnet.addr(ip)
+    #    #deleted = arp.delete(_ip)
+    #    deleted = subprocess.call([self.sudo, self.arp, "-d", ip])
+    #    return deleted
 
     def del_arp(self, ip):
         """Установить соответствие mac-ip в системной ARP-таблице"""
-        if not self._re_ip.match(ip):
-            raise ValueError("%s is not valid ip address" % ip)
-        #arp = dnet.arp()
-        #_ip = dnet.addr(ip)
-        #deleted = arp.delete(_ip)
-        deleted = subprocess.call([self.sudo, self.arp, "-d", ip])
+        if not self.ip:
+            raise RuntimeError("MacAssoc.ip must be set first")
+        arp = dnet.arp()
+        _ip = dnet.addr(self.ip)
+        deleted = arp.delete(_ip)
         return deleted
 
 

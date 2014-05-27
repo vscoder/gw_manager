@@ -8,7 +8,7 @@ cd $DIR
 PY=$(which python2)
 HTTP="$PY -m CGIHTTPServer"
 HTTPID="/tmp/gwman_http.pid"
-SERVER="$DIR/bin/server.py"
+SERVER="$DIR/bin/xmlrpcserver.py"
 SERVERPID="/tmp/gwman_server.pid"
 
 #/usr/local/bin/screen -d -m su arp -c 'python2 -m CGIHTTPServer'

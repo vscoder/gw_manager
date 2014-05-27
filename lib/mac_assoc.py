@@ -95,7 +95,7 @@ class MacAssoc(gwman):
         
         # Если нет точки в addr, то это mac-адрес
         if not "." in addr:
-            addr = self.mac_conf(addr)
+            addr = self.mac_conv(addr)
 
         result = {}
         arptable = self.arptable

@@ -64,7 +64,7 @@ class GwManagerHandler(SocketServer.StreamRequestHandler):
         if cmd == "check_ip":
             ip = args[0]
             result = self.check_ip(ip)
-        if cmd == "mac_ass":
+        elif cmd == "mac_ass":
             action = args[0]
             if action == 'find':
                 try:

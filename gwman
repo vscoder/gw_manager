@@ -17,9 +17,10 @@ SERVERPID="/tmp/gwman_server.pid"
 start_server () {
 	if [ -f $SERVERPID ]; then
 		echo "$SERVER already running with PID: $(cat $SERVERPID)"
+	else
+		$SERVER &
+		PID=$!
 	fi
-	$SERVER &
-	PID=$!
 	if [ "xxx" == "xxx$PID" ]; then
 		echo "ERROR starting $SERVER"
 	else
@@ -31,9 +32,10 @@ start_server () {
 start_http () {
 	if [ -f $HTTPID ]; then
 		echo "$HTTP already running with PID: $(cat $HTTPID)"
+	else
+		$HTTP &
+		PID=$!
 	fi
-	$HTTP &
-	PID=$!
 	if [ "xxx" == "xxx$PID" ]; then
 		echo "ERROR starting $HTTP"
 	else

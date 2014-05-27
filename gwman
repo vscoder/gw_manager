@@ -1,0 +1,119 @@
+#!/bin/sh
+
+# cd to program's directory
+ME=$(readlink -m $0)
+DIR=$(dirname $ME)
+cd $DIR
+
+PY=$(which python2)
+HTTP="$PY -m CGIHTTPServer"
+HTTPID="/tmp/gwman_http.pid"
+SERVER="$DIR/bin/server.py"
+SERVERPID="/tmp/gwman_server.pid"
+
+#/usr/local/bin/screen -d -m su arp -c 'python2 -m CGIHTTPServer'
+#./bin/server.py &
+
+start_server () {
+	if [ -f $SERVERPID ]; then
+		echo "$SERVER already running with PID: $(cat $SERVERPID)"
+	fi
+	$SERVER &
+	PID=$!
+	if [ "xxx" == "xxx$PID" ]; then
+		echo "ERROR starting $SERVER"
+	else
+		echo $PID > $SERVERPID
+		echo "$SERVER started sucefully. PID: $PID"
+	fi
+}
+
+start_http () {
+	if [ -f $HTTPID ]; then
+		echo "$HTTP already running with PID: $(cat $HTTPID)"
+	fi
+	$HTTP &
+	PID=$!
+	if [ "xxx" == "xxx$PID" ]; then
+		echo "ERROR starting $HTTP"
+	else
+		echo $PID > $HTTPID
+		echo "$HTTP started sucefully. PID: $PID"
+	fi
+}
+
+stop_server () {
+	if [ ! -f $SERVERPID ]; then
+		echo "$SERVER is not running, PID file not found on path: $SERVERPID"
+	else
+		PID=$(cat $SERVERPID)
+		kill $PID
+		rm -f $SERVERPID
+	fi
+}
+
+stop_http () {
+	if [ ! -f $HTTPID ]; then
+		echo "$HTTP is not running, PID file not found on path: $HTTPID"
+	else
+		PID=$(cat $HTTPID)
+		kill $PID
+		rm -f $HTTPID
+	fi
+}
+
+status_http () {
+	if [ ! -f $HTTPID ]; then
+		echo "$HTTP is not running, PID file not found on path: $HTTPID"
+		return 1
+	else
+		PID=$(cat $HTTPID)
+		if kill -0 $PID; then
+			echo "$HTTPID already running with PID: $PID"
+			return 0
+		else
+			echo "$HTTP is not running, but pidfile exists: $HTTPID"
+			return 1
+		fi
+	fi
+}
+
+status_server () {
+	if [ ! -f $SERVERPID ]; then
+		echo "$SERVER is not running, PID file not found on path: $SERVERPID"
+		return 1
+	else
+		PID=$(cat $SERVERPID)
+		if kill -0 $PID; then
+			echo "$SERVERPID already running with PID: $PID"
+			return 0
+		else
+			echo "$SERVER is not running, but pidfile exists: $SERVERPID"
+			return 1
+		fi
+	fi
+}
+
+case $1 in
+start	)
+	start_http
+	start_server
+;;
+stop	)
+	stop_server
+	stop_http
+;;
+restart	)
+	stop_server
+	stop_http
+	start_http
+	start_server
+;;
+status	)
+	status_http
+	status_server
+;;
+*	)
+	echo "$0 (start|stop|restart)";
+;;
+esac

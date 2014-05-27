@@ -11,6 +11,8 @@ from firewall import Pf
 from firewall import Ipfw
 from mac_assoc import MacAssoc
 from ping import Ping
+from switches import Zabbix
+from findmac import Switch
 
 
 class GwManServerFunctions:
@@ -105,6 +107,28 @@ class GwManServerFunctions:
 
         return result
 
+
+    def findmac_on_switches(self, pattern, mac, vlan):
+        """find <mac> on switches like <pattern> in <vlan>"""
+        zabbix = Zabbix(conf = 'conf/main.conf')
+        switches = zabbix.switchlist(pattern)
+
+        result = []
+        for ip, comm in switches:
+            sw = Switch(host = ip)
+            sw.proto = 'snmp'
+            sw.vlan = vlan
+            sw.model = 'A3100'
+            sw.community = comm
+
+            port = sw.find_mac(mac)
+
+            if port:
+                result.append("MAC '%s' found on %s port %s" % (mac, ip, port))
+            else:
+                result.append("MAC '%s' not found on %s vlan %s" % (mac, ip, sw.vlan))
+        
+        return result
 
     #def run_cmd(self, cmd):
     #    """run shell cmd as current user"""

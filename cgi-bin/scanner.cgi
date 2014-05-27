@@ -1,15 +1,13 @@
 #!/usr/bin/env python2
 # -*- coding: utf_8 -*-
 
-import sys
+import xmlrpclib
+
 import cgi
 import cgitb
 cgitb.enable()
 
 import logging
-
-sys.path.insert(0, "./lib")
-from scan import Scan
 
 # Инициализация логирования
 logging.basicConfig(filename='log/scanner.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
@@ -20,13 +18,9 @@ host = arguments.getvalue('host')
 port = arguments.getvalue('port')
 
 # Инициализация класса
-scanner = Scan(host = host, port = port)
+server = xmlrpclib.ServerProxy('http://localhost:1237')
 
-if scanner.check_tcp_port():
-    result = 'OPEN'
-else:
-    result = 'CLOSED'
-
+result = server.do_scan(host, port)
 
 print "Content-Type: text/html;charset=utf-8"
 print

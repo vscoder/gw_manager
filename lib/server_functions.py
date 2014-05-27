@@ -84,7 +84,7 @@ class GwManServerFunctions:
     def do_scan(self, *args, **kwargs):
         """scan tcp port"""
         host, port = args
-        scanner = self.Scan(host = host, port = port)
+        scanner = Scan(host = host, port = port)
         if scanner.check_tcp_port():
             result = 'OPEN'
         else:
@@ -93,11 +93,11 @@ class GwManServerFunctions:
         return result
 
        
-    def run_cmd(self, cmd):
-        """run shell cmd as current user"""
-        run = tuple(cmd.split())
-        result = subprocess.check_output(run)
-        return result
+    #def run_cmd(self, cmd):
+    #    """run shell cmd as current user"""
+    #    run = tuple(cmd.split())
+    #    result = subprocess.check_output(run)
+    #    return result
         
 
 

@@ -10,6 +10,7 @@ from scan import Scan
 from firewall import Pf
 from firewall import Ipfw
 from mac_assoc import MacAssoc
+from ping import Ping
 
 
 class GwManServerFunctions:
@@ -92,7 +93,19 @@ class GwManServerFunctions:
 
         return result
 
-       
+    
+    def ping(self, host, count=3):
+        """ping <host> <count> times"""
+
+        # Инициализация класса
+        ping = Ping(host = host)
+        ping.count = count
+
+        result = ping.ping_host()
+
+        return result
+
+
     #def run_cmd(self, cmd):
     #    """run shell cmd as current user"""
     #    run = tuple(cmd.split())

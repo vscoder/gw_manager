@@ -29,6 +29,7 @@ class Ping(gwman):
     def count(self, count):
         if not count:
             count = self._count
+        count = str(count)
         if not count.isdigit():
             raise ValueError("%s is not valid ping count" % count)
         self._count = count

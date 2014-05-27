@@ -25,7 +25,7 @@ error = None
 # Формирование комманды для передачи серверу
 if action == 'find':
     if not addr:
-        error = "ERROR: 'addr' must be set!"
+        addr = ""
     cmd = "mac_ass %s %s" % (action, addr)
 elif action == 'add':
     if not ip or not mac:

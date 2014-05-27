@@ -92,6 +92,11 @@ class MacAssoc(gwman):
         """Получить значение из ARP таблицы
         addr -- ip или mac адрес"""
         addr = addr.upper()
+        
+        # Если нет точки в addr, то это mac-адрес
+        if not "." in addr:
+            addr = self.mac_conf(addr)
+
         result = {}
         arptable = self.arptable
         for ip, mac in arptable.items():

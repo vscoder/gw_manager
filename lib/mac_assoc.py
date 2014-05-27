@@ -102,7 +102,7 @@ class MacAssoc(gwman):
         for ip, mac in arptable.items():
             mac = mac.upper()
             if addr in ip or addr in mac:
-                result[ip] = mac
+                result[ip] = mac.upper()
         return result
 
 
@@ -189,30 +189,6 @@ class MacAssoc(gwman):
         return result
 
 
-    #def set_ethers(self, ip, mac):
-    #    """Задание соответствия в файле self.ethers"""
-    #    # Проверка на корректность ip и mac адресов
-    #    mac = mac.upper()
-    #    if not self._re_ip.match(ip):
-    #        raise ValueError("%s is not valid ip address" % ip)
-    #    if not self._re_mac.match(mac):
-    #        raise ValueError("%s is not valid mac address" % mac)
-    #    # Преобразуем фаил в словарь {ip: mac, }
-    #    entries = {}
-    #    with open(self.ethers, 'r') as f:
-    #        for line in f:
-    #            _ip, _mac = line.split()
-    #            entries[_ip] = _mac.upper()
-    #    # Изменяем запись
-    #    entries[ip] = mac
-
-    #    # Перезаписываем фаил
-    #    with open(self.ethers, 'w') as f:
-    #        for _ip, _mac in entries.items():
-    #            f.write("%s\t%s\n" % (_ip, _mac))
-
-    #    return True
-    
     def set_ethers(self):
         """Задание соответствия в файле self.ethers"""
         # Проверка на корректность ip и mac адресов
@@ -236,28 +212,6 @@ class MacAssoc(gwman):
 
         return True
         
-
-    #def del_ethers(self, addr):
-    #    """Удаление соответствия из файла self.ethers"""
-    #    # Преобразуем фаил в словарь {ip: mac, }
-    #    # и если строка соответствует поиску не добавляем ее
-    #    addr = addr.upper()
-    #    entries = {}
-    #    deleted = False
-    #    with open(self.ethers, 'r') as f:
-    #        for line in f:
-    #            _ip, _mac = line.split()
-    #            if addr == _ip or addr == _mac:
-    #                deleted = True
-    #            else:
-    #                entries[_ip] = _mac.upper()
-
-    #    # Перезаписываем фаил
-    #    with open(self.ethers, 'w') as f:
-    #        for _ip, _mac in entries.items():
-    #            f.write("%s\t%s\n" % (_ip, _mac))
-
-    #    return deleted
 
     def del_ethers(self):
         """Удаление соответствия из файла self.ethers"""
@@ -321,6 +275,7 @@ class MacAssoc(gwman):
 
         return arptable
 
+
     def find_ipfw(self, addr):
         """Поиск по части ip/mac адреса"""
         addr = addr.upper()
@@ -328,7 +283,7 @@ class MacAssoc(gwman):
         result = {}
         for ip, mac in arptable.items():
             if addr in ip or addr in mac:
-                result[ip] = mac
+                result[ip] = mac.upper()
 
         return result
             
@@ -339,7 +294,7 @@ class MacAssoc(gwman):
         result = {}
         for ip, mac in arptable.items():
             if addr == ip or addr == mac:
-                result[ip] = mac
+                result = (ip, mac.upper())
 
         return result
 
@@ -390,76 +345,6 @@ class MacAssoc(gwman):
         with open(self.ethers, 'w') as f:
             for _ip, _mac in arptable.items():
                 f.write("%s\t%s\n" % (_ip, _mac))
-
-
-    #def find_assoc(self, addr):
-    #    """Команда для поиска записи
-    #    в текущем хранилище ARP-привязок"""
-    #    if not addr:
-    #        addr = ""
-    #    addr = addr.upper()
-    #    if self.arptype == 'ethers':
-    #        return self.find_ethers(addr)
-    #    elif self.arptype == 'arp':
-    #        return self.find_arp(addr)
-    #    elif self.arptype == 'ipfw':
-    #        return self.find_ipfw(addr)
-    #    elif self.arptype == 'script':
-    #        pass
-    #
-    #    else:
-    #        pass
-
-
-    #def get_assoc(self, addr):
-    #    """Команда для получения записи
-    #    из текущего хранилища ARP-привязок"""
-    #    addr = addr.upper()
-    #    if self.arptype == 'ethers':
-    #        return self.get_ethers(addr)
-    #    elif self.arptype == 'arp':
-    #        return self.get_arp(addr)
-    #    elif self.arptype == 'ipfw':
-    #        return self.get_ipfw(addr)
-    #    elif self.arptype == 'script':
-    #        pass
-    #
-    #    else:
-    #        pass
-
-
-    #def set_assoc(self, ip, mac):
-    #    """Команда для добавления записи
-    #    в текущее хранилище ARP-привязок"""
-    #    mac = mac.upper()
-    #    if self.arptype == 'ethers':
-    #        self.set_ethers(ip, mac)
-    #        return (ip, mac)
-    #    elif self.arptype == 'arp':
-    #        self.set_arp(ip, mac)
-    #    elif self.arptype == 'ipfw':
-    #        self.set_ipfw(ip, mac)
-    #    elif self.arptype == 'script':
-    #        pass
-    #
-    #    else:
-    #        pass
-
-    
-    #def del_assoc(self, ip):
-    #    """Команда для удаления записи
-    #    из текущего хранилища ARP-привязок"""
-    #    if self.arptype == 'ethers':
-    #        return self.del_ethers(ip)
-    #    elif self.arptype == 'arp':
-    #        return self.del_arp(ip)
-    #    elif self.arptype == 'ipfw':
-    #        return self.del_ipfw(ip)
-    #    elif self.arptype == 'script':
-    #        pass
-    #
-    #    else:
-    #        pass
 
 
 if __name__ == "__main__":

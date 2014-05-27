@@ -48,6 +48,9 @@ stop_server () {
 	else
 		PID=$(cat $SERVERPID)
 		kill $PID
+		echo "Killing process $PID..."
+		wait $PID
+		echo "Done"
 		rm -f $SERVERPID
 	fi
 }
@@ -58,6 +61,9 @@ stop_http () {
 	else
 		PID=$(cat $HTTPID)
 		kill $PID
+		echo "Killing process $PID..."
+		wait $PID
+		echo "Done"
 		rm -f $HTTPID
 	fi
 }

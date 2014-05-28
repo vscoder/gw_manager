@@ -42,12 +42,25 @@ else:
 
 logging.info(result)
 
+
 if error:
-    raise RuntimeError(error)
+    out = error
+else:
+    status = result['status']
+    data = result['data']
+    
+    if status:
+        status = 'SUCCESS'
+    else:
+        status = 'ERROR'
+    
+    out = [status, ]
+    out.append('<table>')
+    out.extend(["<tr><td>%s</td><td>%s</td></tr>" % (k, v) for k, v in data.items()])
+    out.append('</table>')
 
 
 print "Content-Type: text/html;charset=utf-8"
 print
 
-#print "Sent:     {}".format(data)
-print "<br>".join(result.split("\n"))
+print "\n".join(out)

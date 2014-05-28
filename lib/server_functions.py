@@ -19,11 +19,17 @@ class GwManServerFunctions:
 
     def mac_find(self, addr):
         """Find ip-mac association"""
+        result = {}
         macs = MacAssoc('arp')
-        rows = macs.find(addr)
+        try:
+            rows = macs.find(addr)
+        except Exception as e:
+            result['status'] = False
+            result['data'] = e
+            return result
 
-        lines = [" ".join(row) for row in rows.items()]
-        result = "\n".join(lines)
+        result['status'] = True
+        result['data'] = rows
         return result
 
     def mac_add(self, ip, mac):
@@ -31,12 +37,29 @@ class GwManServerFunctions:
         macs = MacAssoc('ethers')
         macs.ip = ip
         macs.mac = mac
+        result = {}
 
-        if macs.set():
-            macs.ethers_to_arp()
-            result = "OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
+        try:
+            status = macs.set()
+        except Exception as e:
+            result['status'] = False
+            result['data'] = e
+            return result
+
+        result['data'] = {'arptype': macs.arptype, 'ip': macs.ip, 'mac': macs.mac}
+        if status:
+            try:
+                macs.ethers_to_arp()
+            except Exception as e:
+                result['status'] = False
+                result['data'] = e
+                return result
+
+            result['status'] = True
+            #"OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
         else:
-            result = "ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
+            result['status'] = False
+            #"ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
 
         return result
 
@@ -44,12 +67,30 @@ class GwManServerFunctions:
         """Del ip-mac association"""
         macs = MacAssoc('ethers')
         macs.ip = ip
+        result = {}
 
-        if macs.delete():
-            macs.ethers_to_arp()
-            result = "OK: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
+        try:
+            status = macs.delete()
+        except Exception as e:
+            result['status'] = False
+            result['data'] = e
+            return result
+
+        result['data'] = {'arptype': macs.arptype, 'ip': macs.ip}
+        if status:
+            try:
+                macs.ethers_to_arp()
+            except Exception as e:
+                result['status'] = False
+                result['data'] = e
+                return result
+
+            result['status'] = True
+            #"OK: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
         else:
-            result = "ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
+            result['status'] = False
+            result['data'] = {'ip': macs.ip, 'error:': 'not found in %s' % macs.ethers}
+            #"ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
 
         return result
 

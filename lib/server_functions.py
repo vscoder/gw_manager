@@ -17,10 +17,10 @@ from findmac import Switch
 
 class GwManServerFunctions:
 
-    def mac_find(self, ip):
+    def mac_find(self, addr):
         """Find ip-mac association"""
         macs = MacAssoc('arp')
-        rows = macs.find(ip)
+        rows = macs.find(addr)
 
         lines = [" ".join(row) for row in rows.items()]
         result = "\n".join(lines)

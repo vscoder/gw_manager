@@ -19,13 +19,13 @@ class GwManServerFunctions:
 
     def mac_find(self, addr):
         """Find ip-mac association"""
-        result = {}
+        result = dict()
         macs = MacAssoc('arp')
         try:
             rows = macs.find(addr)
         except Exception as e:
             result['status'] = False
-            result['data'] = e
+            result['data'] = {'error:': e.message}
             return result
 
         result['status'] = True
@@ -37,13 +37,13 @@ class GwManServerFunctions:
         macs = MacAssoc('ethers')
         macs.ip = ip
         macs.mac = mac
-        result = {}
+        result = dict()
 
         try:
             status = macs.set()
         except Exception as e:
             result['status'] = False
-            result['data'] = e
+            result['data'] = {'error:': e.message}
             return result
 
         result['data'] = {'arptype': macs.arptype, 'ip': macs.ip, 'mac': macs.mac}
@@ -52,7 +52,7 @@ class GwManServerFunctions:
                 macs.ethers_to_arp()
             except Exception as e:
                 result['status'] = False
-                result['data'] = e
+                result['data'] = {'error:': e.message}
                 return result
 
             result['status'] = True
@@ -67,13 +67,13 @@ class GwManServerFunctions:
         """Del ip-mac association"""
         macs = MacAssoc('ethers')
         macs.ip = ip
-        result = {}
+        result = dict()
 
         try:
             status = macs.delete()
         except Exception as e:
             result['status'] = False
-            result['data'] = e
+            result['data'] = {'error:': e.message}
             return result
 
         result['data'] = {'arptype': macs.arptype, 'ip': macs.ip}
@@ -82,7 +82,7 @@ class GwManServerFunctions:
                 macs.ethers_to_arp()
             except Exception as e:
                 result['status'] = False
-                result['data'] = e
+                result['data'] = {'error:': e.message}
                 return result
 
             result['status'] = True
@@ -97,18 +97,28 @@ class GwManServerFunctions:
     
     def check_ip(self, ip):
         """Check block status and shape of ip address"""
-        # PF
-        pf = Pf(ip = ip)
+        result = dict()
 
-        if pf.check_ip():
-            status = 'ON'
-        else:
-            status = 'OFF'
+        # PF
+        ipstatus = False
+        try:
+            pf = Pf(ip = ip)
+            if pf.check_ip():
+                ipstatus = True
+        except Exception as e:
+            result['status'] = False
+            result['data'] = {'error:': e.message}
+            return result
 
         # IPFW
-        ipfw = Ipfw(ip = ip)
+        try:
+            ipfw = Ipfw(ip = ip)
+            pipes = ipfw.check_ip()
+        except Exception as e:
+            result['status'] = False
+            result['data'] = {'error:': e.message}
+            return result
 
-        pipes = ipfw.check_ip()
         if pipes:
             shape_in = pipes[3]
             shape_out = pipes[2]
@@ -116,11 +126,11 @@ class GwManServerFunctions:
             shape_in = 'unknown'
             shape_out = 'unknown'
 
-        result = """
-                 IP '%(ip)s' status: %(status)s
-                 rx traffic shape: %(in)s Kbit/s
-                 tx traffic shape: %(out)s Kbit/s
-                 """ % {'ip': ip, 'status': status, 'in': shape_in, 'out': shape_out}
+        result['status'] = True
+        result['data'] = {'ip': ip,
+                          'ipstatus': ipstatus,
+                          'shape_in': shape_in,
+                          'shape_out': shape_out}
 
         return result
 

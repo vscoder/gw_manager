@@ -135,14 +135,21 @@ class GwManServerFunctions:
         return result
 
     
-    def do_scan(self, *args, **kwargs):
+    def do_scan(self, host, port):
         """scan tcp port"""
-        host, port = args
-        scanner = Scan(host = host, port = port)
-        if scanner.check_tcp_port():
-            result = 'OPEN'
-        else:
-            result = 'CLOSED'
+        result = dict()
+        try:
+            scanner = Scan(host = host, port = port)
+            if scanner.check_tcp_port():
+                result['status'] = True
+                result['data'] = {'port_status': True, }
+            else:
+                result['status'] = True
+                result['data'] = {'port_status': False, }
+        except Exception as e:
+            result['status'] = False
+            result['data'] = {'error:': e.message}
+            return result
 
         return result
 

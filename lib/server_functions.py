@@ -156,12 +156,24 @@ class GwManServerFunctions:
     
     def ping(self, host, count=3):
         """ping <host> <count> times"""
-
+        result = dict()
         # Инициализация класса
-        ping = Ping(host = host)
-        ping.count = count
+        try:
+            ping = Ping(host = host)
+            ping.count = count
 
-        result = ping.ping_host()
+            (retcode, out) = ping.ping_host()
+            if retcode == 0:
+                pinged = True
+            else:
+                pinged = False
+            result['status'] = True
+            result['data'] = {'pinged': pinged,
+                              'out': out }
+        except Exception as e:
+            result['status'] = False
+            result['data'] = {'error:': e.message}
+            return result
 
         return result
 

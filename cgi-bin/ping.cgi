@@ -20,11 +20,28 @@ count = arguments.getvalue('count') or '3'
 # Инициализация класса
 server = xmlrpclib.ServerProxy('http://localhost:1237')
 
-retcode, result = server.ping(host, count)
+result = server.ping(host, count)
+logging.info(result)
 
+status = result['status']
+data = result['data']
+
+if status:
+    status = 'SUCCESS'
+    if data['pinged']:
+        pinged = 'OK'
+    else:
+        pinged = 'NO'
+    ping_out = data['out']
+    out = ("Pinged: %s<br>%s" % (pinged, "<br>".join(ping_out.split("\n"))), )
+else:
+    status = 'ERROR'
+    out = [status, ]
+    out.append('<table>')
+    out.extend(["<tr><td>%s</td><td>%s</td></tr>" % (k, v) for k, v in data.items()])
+    out.append('</table>')
 
 print "Content-Type: text/html;charset=utf-8"
 print
 
-print "<br>".join(result.split('\n'))
-logging.info(result)
+print "\n".join(out)

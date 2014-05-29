@@ -42,7 +42,7 @@ class Zabbix(object):
         if not self.conf:
             raise ValueError("Zabbix.conf must be set")
 
-        db_params = self.parse_conf('db')
+        db_params = self.parse_conf('zabbix')
         self._db_ = MySQLdb.connect(**db_params)
         #self._cur_ = self._db_.cursor(MySQLdb.cursors.DictCursor)
         self._cur_ = self._db_.cursor()

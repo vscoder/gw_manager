@@ -9,9 +9,10 @@ from gwman import gwman
 
 class Switch(gwman):
     
-    def __init__(self, host='127.0.0.1', port=161, community='public'):
+    _models = ['A3100', 'OTHER', ]
 
-        self._models = ['A3100', 'OTHER', ]
+    def __init__(self, host='127.0.0.1', port=161, community='public', vlan=1, getmodel=False):
+
         self._protocols = ['snmp', 'telnet']
 
         self.snmpget = self.find_exec('snmpget')
@@ -20,8 +21,13 @@ class Switch(gwman):
         self.port = port
         self.timeout = 5
         self.community = community
+        self.vlan = vlan
 
         self.mactable_oid = ''
+
+        # Получение модели свича из sysDescr.0
+        if getmodel:
+            self.get_model()
 
 
     @property
@@ -114,6 +120,30 @@ class Switch(gwman):
         return out
 
 
+    def get_model(self ):
+        """Получить модель свича через snmp"""
+
+        oid = '.1.3.6.1.2.1.1.1.0'
+
+        cmd = [self.snmpget, '-v1', '-c', self.community, self.host, oid]
+
+        print " ".join(cmd)
+
+        try:
+            out = subprocess.check_output(cmd)
+        except:
+            return None
+
+        sysdescr = out.split('=')[1].strip()
+        
+        for m in self._models:
+            if sysdescr.find(m) >= 0:
+                self.model = m
+                return m
+
+        return None
+
+
 def main():
     # Обработка аргументов коммандной строки
     import argparse
@@ -137,15 +167,19 @@ def main():
     params = parser.parse_args()
 
     # Инициализация
-    sw = Switch(host = params.host)
+    sw = Switch(host = params.host, community = params.community, vlan = params.vlan)
     sw.proto = 'snmp'
-    sw.vlan = params.vlan
-    sw.model = 'A3100'
-    sw.community = params.community
+    #sw.vlan = params.vlan
+    #sw.model = 'A3100'
+    #sw.community = params.community
     
     res = sw.find_mac(params.mac)
 
     print "MAC found on port %s" % res
+
+    #model = sw.get_model()
+
+    #print model
     
 
 if __name__ == "__main__":

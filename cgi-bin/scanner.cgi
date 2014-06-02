@@ -20,7 +20,7 @@ port = arguments.getvalue('port')
 # Инициализация класса
 server = xmlrpclib.ServerProxy('http://localhost:1237')
 
-result = server.do_scan(host, port)
+result = server.scan_tcp(host, port)
 logging.info(result)
 
 status = result['status']

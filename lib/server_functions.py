@@ -135,7 +135,7 @@ class GwManServerFunctions:
         return result
 
     
-    def do_scan(self, host, port):
+    def scan_tcp(self, host, port):
         """scan tcp port"""
         result = dict()
         try:

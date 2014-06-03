@@ -38,7 +38,7 @@ else:
 
 out = [status, ]
 out.append('<table>')
-out.extend(["<tr><td>%s</td><td>%s</td></tr>" % (k, "</td><td>".join((v['mac'], str(v['port'])))) for k, v in data.items()])
+out.extend(["<tr><td>%s</td><td>%s</td></tr>" % (k, str(v)) for k, v in data.items()])
 out.append('</table>')
 
 

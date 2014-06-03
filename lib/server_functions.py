@@ -240,18 +240,11 @@ class GwManServerFunctions(object):
 
             port = sw.find_mac(mac)
 
-            row = dict()
-            row['port'] = port
-            row['mac'] = mac
-            row['vlan'] = sw.vlan
-            if port:
-                row['status'] = True
-            else:
-                row['status'] = False
-
-            data[sw.host] = row
+            data[sw.host] = port
 
         result['status'] = True
+        result['mac'] = mac
+        result['vlan'] = sw.vlan
         result['data'] = data
         
         return result

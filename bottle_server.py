@@ -55,7 +55,7 @@ def action(action):
     forms = get_forms("%s/conf/forms.conf" % cwd)
 
     conn_str = 'http://localhost:1237'
-    params = dict(request.query)
+    params = dict(request.params)
 
     result = xmlrpcrequest(conn_str, action, params)
     

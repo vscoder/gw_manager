@@ -19,7 +19,8 @@ ip = arguments.getvalue('ip')
 # Передача команды на сервер и получение результата
 server = xmlrpclib.ServerProxy('http://localhost:1237')
 
-result = server.check_ip(ip)
+params = {'ip': ip}
+result = server.check_ip(params)
 logging.info(result)
 
 status = result['status']

@@ -21,7 +21,11 @@ vlan = arguments.getvalue('vlan')
 # Инициализация
 server = xmlrpclib.ServerProxy('http://localhost:1237')
 
-result = server.findmac_on_switches(pattern, mac, vlan)
+params = {'pattern': pattern,
+          'mac': mac,
+          'vlan': vlan,
+          }
+result = server.findmac_on_switches(params)
 
 
 print "Content-Type: text/html;charset=utf-8"

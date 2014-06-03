@@ -16,9 +16,9 @@ logging.basicConfig(filename='log/mac_assoc.log', format='%(asctime)s %(message)
 # Разбор переданных аргументов
 arguments = cgi.FieldStorage()
 action = arguments.getvalue('action')
-addr = arguments.getvalue('addr')
-ip = arguments.getvalue('ip')
-mac = arguments.getvalue('mac')
+addr = arguments.getvalue('addr', "")
+ip = arguments.getvalue('ip', "")
+mac = arguments.getvalue('mac', "")
 
 # Передача команды на сервер и получение результата
 server = xmlrpclib.ServerProxy('http://localhost:1237')
@@ -26,17 +26,25 @@ server = xmlrpclib.ServerProxy('http://localhost:1237')
 error = None
 # Формирование комманды для передачи серверу
 if action == 'find':
-    if not addr:
-        addr = ""
-    result = server.mac_find(addr)
+    params = {'addr': addr, }
+
+    logging.debug("action: %s, params: %s" % (action, params))
+    result = server.mac_find(params)
 elif action == 'add':
     if not ip or not mac:
         error = "ERROR: IP and MAC must be set"
-    result = server.mac_add(ip, mac)
+    params = {'ip': ip,
+              'mac': mac,}
+
+    logging.debug("action: %s, params: %s" % (action, params))
+    result = server.mac_add(params)
 elif action == 'del':
     if not ip:
         error = "ERROR: IP must be set"
-    result = server.mac_del(ip)
+    params = {'ip': ip, }
+
+    logging.debug("action: %s, params: %s" % (action, params))
+    result = server.mac_del(params)
 else:
     error = "ERROR: wrong action '%s'" % action
 

@@ -20,7 +20,10 @@ count = arguments.getvalue('count') or '3'
 # Инициализация класса
 server = xmlrpclib.ServerProxy('http://localhost:1237')
 
-result = server.ping(host, count)
+params = {'host': host,
+          'count': count,
+          }
+result = server.ping(params)
 logging.info(result)
 
 status = result['status']

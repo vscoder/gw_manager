@@ -5,6 +5,12 @@ import sys
 import os
 import subprocess
 
+import logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s: %(message)s',
+                    filename='log/server_functions.log',
+                    )
+
 #sys.path.insert(0, "./lib")
 from scan import Scan
 from firewall import Pf
@@ -15,8 +21,18 @@ from switches import Zabbix
 from findmac import Switch
 
 
-class GwManServerFunctions:
+def as_dict(fn):
+    """get function params from dict"""
+    def wrapped(self, params):
+        logging.debug("func: '%s', params: %s" % (fn.__name__, params))
+        return fn(self, **params)
+    
+    return wrapped
 
+
+class GwManServerFunctions(object):
+
+    @as_dict
     def mac_find(self, addr):
         """Find ip-mac association"""
         result = dict()
@@ -32,6 +48,7 @@ class GwManServerFunctions:
         result['data'] = rows
         return result
 
+    @as_dict
     def mac_add(self, ip, mac):
         """Add ip-mac association"""
         macs = MacAssoc('ethers')
@@ -63,6 +80,7 @@ class GwManServerFunctions:
 
         return result
 
+    @as_dict
     def mac_del(self, ip):
         """Del ip-mac association"""
         macs = MacAssoc('ethers')
@@ -95,6 +113,7 @@ class GwManServerFunctions:
         return result
 
     
+    @as_dict
     def check_ip(self, ip):
         """Check block status and shape of ip address"""
         result = dict()
@@ -135,6 +154,7 @@ class GwManServerFunctions:
         return result
 
     
+    @as_dict
     def scan_tcp(self, host, port):
         """scan tcp port"""
         result = dict()
@@ -153,7 +173,8 @@ class GwManServerFunctions:
 
         return result
 
-    
+
+    @as_dict
     def ping(self, host, count=3):
         """ping <host> <count> times"""
         result = dict()
@@ -178,6 +199,7 @@ class GwManServerFunctions:
         return result
 
 
+    @as_dict
     def findmac_on_switches(self, pattern, mac, vlan):
         """find <mac> on switches like <pattern> in <vlan>"""
         zabbix = Zabbix(conf = 'conf/main.conf')
@@ -205,7 +227,6 @@ class GwManServerFunctions:
     #    run = tuple(cmd.split())
     #    result = subprocess.check_output(run)
     #    return result
-        
 
 
 if __name__ == "__main__":

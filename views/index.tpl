@@ -8,7 +8,7 @@
 
 <body>
 
-<div id="menu">
+<div id="menu" class="left">
 
 %for form in forms:
 
@@ -19,7 +19,7 @@
 
 </div>
 
-<div id="data">
+<div id="data" class="right">
 
 %if defined('data'):
 %    include('data.tpl', **data)

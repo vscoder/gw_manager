@@ -221,10 +221,16 @@ class GwManServerFunctions(object):
     @as_dict
     def findmac_on_switches(self, pattern, mac, vlan):
         """find <mac> on switches like <pattern> in <vlan>"""
-        zabbix = Zabbix(conf = 'conf/main.conf')
-        switches = zabbix.switchlist(pattern)
+        result = dict()
+        try:
+            zabbix = Zabbix(conf = 'conf/main.conf')
+            switches = zabbix.switchlist(pattern)
+        except Exception as e:
+            result['status'] = False
+            result['data'] = {'error:': e.message}
+            return result
 
-        result = []
+        data = dict()
         for ip, comm in switches:
             sw = Switch(host = ip)
             sw.proto = 'snmp'
@@ -234,10 +240,19 @@ class GwManServerFunctions(object):
 
             port = sw.find_mac(mac)
 
+            row = dict()
+            row['port'] = port
+            row['mac'] = mac
+            row['vlan'] = sw.vlan
             if port:
-                result.append("MAC '%s' found on %s port %s" % (mac, ip, port))
+                row['status'] = True
             else:
-                result.append("MAC '%s' not found on %s vlan %s" % (mac, ip, sw.vlan))
+                row['status'] = False
+
+            data[sw.host] = row
+
+        result['status'] = True
+        result['data'] = data
         
         return result
 

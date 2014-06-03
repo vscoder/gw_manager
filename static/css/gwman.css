@@ -5,3 +5,17 @@
 #data { /* Правая колонка */
   margin-left: 25%; /* Отступ слева */
 }
+
+#form_table { /* Таблица с элементами формы */
+  width: 100%;
+  font-size: 14px;
+  font-weight: normal;
+}
+#control_col { /* Столбец с элементами ввода формы */
+  text-align: right;
+}
+
+#input_form { /* Заголовок формы */
+  font-size: 14px;
+  font-weight: bold;
+}

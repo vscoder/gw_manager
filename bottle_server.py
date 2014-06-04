@@ -116,4 +116,4 @@ def xmlrpcrequest(conn_str, func, params):
 
 if __name__ == "__main__":
     #run(host='localhost', port=8001, server='cherrypy', debug=True)
-    gwman.run(host='localhost', port=8000, debug=True, reloader=True)
+    gwman.run(host='0.0.0.0', port=8000, debug=True, reloader=True)

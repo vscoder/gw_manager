@@ -20,6 +20,7 @@
 #input_form { /* Заголовок формы */
   font-size: 14px;
   font-weight: bold;
+  border: 1px solid #000000;
 }
 
 div.left { /* Левая колонка */

@@ -13,7 +13,6 @@
 %for form in forms:
 
 %include('form.tpl', **form)
-<hr>
 
 %end
 

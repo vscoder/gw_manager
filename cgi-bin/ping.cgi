@@ -36,7 +36,7 @@ if status:
     else:
         pinged = 'NO'
     ping_out = data['out']
-    out = ("Pinged: %s<br>%s" % (pinged, "<br>".join(ping_out.split("\n"))), )
+    out = ("Pinged: %s<br>%s" % (pinged, "<br>".join(ping_out)), )
 else:
     status = 'ERROR'
     out = [status, ]

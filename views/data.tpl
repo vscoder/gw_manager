@@ -1,7 +1,7 @@
 <div id="status">Результат выполнения: <img src="/static/pict/{{"yes" if status else "no"}}.png" alt="{{"yes" if status else "no"}}"></div>
 <table id="command_out" class="command_out">
 %for key, value in data.items():
-<tr class="command_out">
+<tr>
 <td>
   {{key}}
 </td>
@@ -11,7 +11,7 @@
      {{line}}<br>
 %  end
 %elif type(value) == type(bool()):
-     <img src="/static/pict/{{"yes" if status else "no"}}.png" alt="{{"yes" if status else "no"}}">
+     <img src="/static/pict/{{"yes" if value else "no"}}.png" alt="{{"yes" if value else "no"}}">
 %else:
   {{value}}
 %end

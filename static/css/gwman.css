@@ -30,7 +30,9 @@ div.right { /* Правая колонка */
   margin-left: 25%; /* Отступ слева */
 }
 
-tr.command_out td {
+/*tr.command_out td {
   border-width: thin;
   border-bottom: 1px solid #000000;
-}
+}*/
+
+table.command_out tr:nth-child(odd) {background: #CCC}

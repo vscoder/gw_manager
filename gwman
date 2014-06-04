@@ -6,8 +6,10 @@ DIR=$(dirname $ME)
 cd $DIR
 
 PY=$(which python2)
-HTTP="$PY -m CGIHTTPServer"
+HTTP="$PY -m CGIHTTPServer 8001"
 HTTPID="/tmp/gwman_http.pid"
+BOTTLE="$DIR/bottle_server.py"
+BOTTLEPID="/tmp/gwman_bottle.pid"
 SERVER="$DIR/bin/xmlrpcserver.py"
 SERVERPID="/tmp/gwman_server.pid"
 
@@ -44,6 +46,21 @@ start_http () {
 	fi
 }
 
+start_bottle () {
+	if [ -f $BOTTLEPID ]; then
+		echo "$BOTTLE already running with PID: $(cat $BOTTLEPID)"
+	else
+		$BOTTLE &
+		PID=$!
+	fi
+	if [ "xxx" == "xxx$PID" ]; then
+		echo "ERROR starting $BOTTLE"
+	else
+		echo $PID > $BOTTLEPID
+		echo "$BOTTLE started sucefully. PID: $PID"
+	fi
+}
+
 stop_server () {
 	if [ ! -f $SERVERPID ]; then
 		echo "$SERVER is not running, PID file not found on path: $SERVERPID"
@@ -70,6 +87,19 @@ stop_http () {
 	fi
 }
 
+stop_bottle () {
+	if [ ! -f $BOTTLEPID ]; then
+		echo "$BOTTLE is not running, PID file not found on path: $BOTTLEPID"
+	else
+		PID=$(cat $BOTTLEPID)
+		kill $PID
+		echo "Killing process $PID..."
+		wait $PID
+		echo "Done"
+		rm -f $BOTTLEPID
+	fi
+}
+
 status_http () {
 	if [ ! -f $HTTPID ]; then
 		echo "$HTTP is not running, PID file not found on path: $HTTPID"
@@ -81,6 +111,22 @@ status_http () {
 			return 0
 		else
 			echo "$HTTP is not running, but pidfile exists: $HTTPID"
+			return 1
+		fi
+	fi
+}
+
+status_bottle () {
+	if [ ! -f $BOTTLEPID ]; then
+		echo "$BOTTLE is not running, PID file not found on path: $BOTTLEPID"
+		return 1
+	else
+		PID=$(cat $BOTTLEPID)
+		if kill -0 $PID; then
+			echo "$BOTTLEPID already running with PID: $PID"
+			return 0
+		else
+			echo "$BOTTLE is not running, but pidfile exists: $BOTTLEPID"
 			return 1
 		fi
 	fi
@@ -106,20 +152,25 @@ case $1 in
 start	)
 	start_http
 	start_server
+	start_bottle
 ;;
 stop	)
+	stop_bottle
 	stop_server
 	stop_http
 ;;
 restart	)
 	stop_server
 	stop_http
+	stop_bottle
 	start_http
 	start_server
+	start_bottle
 ;;
 status	)
 	status_http
 	status_server
+	status_bottle
 ;;
 *	)
 	echo "$0 (start|stop|restart)";

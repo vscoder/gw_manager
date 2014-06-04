@@ -1,4 +1,4 @@
-Результат выполнения: {{"УСПЕШНО" if status else "ОШИБКА"}}<br>
+<div id="status">Результат выполнения: <img src="/static/pict/{{"yes" if status else "no"}}.png" alt="{{"yes" if status else "no"}}"></div>
 <table id="command_out" class="command_out">
 %for key, value in data.items():
 <tr class="command_out">
@@ -10,6 +10,8 @@
 %  for line in value:
      {{line}}<br>
 %  end
+%elif type(value) == type(bool()):
+     <img src="/static/pict/{{"yes" if status else "no"}}.png" alt="{{"yes" if status else "no"}}">
 %else:
   {{value}}
 %end

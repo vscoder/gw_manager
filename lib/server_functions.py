@@ -209,7 +209,7 @@ class GwManServerFunctions(object):
                 pinged = False
             result['status'] = True
             result['data'] = {'pinged': pinged,
-                              'out': out }
+                              'out': out.split("\n") }
         except Exception as e:
             result['status'] = False
             result['data'] = {'error:': e.message}

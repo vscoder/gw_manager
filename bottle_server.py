@@ -56,6 +56,7 @@ def action(action):
 
     conn_str = 'http://localhost:1237'
     params = dict(request.params)
+    params = {k: v.strip() for k, v in params.iteritems()}
 
     result = xmlrpcrequest(conn_str, action, params)
     

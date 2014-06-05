@@ -18,7 +18,6 @@ sys.path.insert(0, "./lib")
 from server_functions import GwManServerFunctions
 
 
-# Restrict to a particular path.
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
@@ -28,6 +27,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
             hosts = map(lambda a: a.strip(), f.readlines())
 
         if client_address[0] in hosts:
+            logging.info("accepted connection from host {0} port {1}".format(*client_address))
             SimpleXMLRPCRequestHandler.__init__(self, request, client_address, server)
         else:
             logging.error("{} not in list of allowed hosts, cancelled!".format(client_address[0]))

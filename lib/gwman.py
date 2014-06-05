@@ -9,9 +9,17 @@ class gwman(object):
     
     _re_host = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
     # see RFC 1123, regex found in http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address
-    _re_ip = re.compile("((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])")
+    _re_ip = re.compile("^((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9])$")
     _re_mac = re.compile("^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$")
     _re_community = re.compile("^[a-zA-Z1-9_\-]+$")
+
+    def __init__(self):
+        self._ip = None
+        self._host = None
+        self._mac = None
+        self._port = None
+        self._vlan = None
+        self._timeout = None
 
 
     def find_exec(self, cmd):

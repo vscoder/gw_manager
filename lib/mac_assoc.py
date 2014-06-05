@@ -16,6 +16,7 @@ class MacAssoc(gwman):
     _arptypes = ['ethers', 'ipfw', 'arp']
 
     def __init__(self, arptype):
+        gwman.__init__(self)
         # Доступные типы привязки
 
         self.arptype = arptype

@@ -11,6 +11,7 @@ class Ping(gwman):
     """Пинг средствами комманды ping"""
 
     def __init__(self, host='127.0.0.1'):
+        gwman.__init__(self)
 
         self.ping = self.find_exec("ping")
 

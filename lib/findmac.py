@@ -12,6 +12,7 @@ class Switch(gwman):
     _models = ['A3100', 'OTHER', ]
 
     def __init__(self, host='127.0.0.1', port=161, community='public', vlan=1, getmodel=False):
+        gwman.__init__(self)
 
         self._protocols = ['snmp', 'telnet']
 

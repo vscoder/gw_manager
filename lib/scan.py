@@ -8,6 +8,7 @@ class Scan(object):
     _protocols = ['tcp', ]
     
     def __init__(self, host='127.0.0.1', port=80, timeout=5, proto='tcp'):
+        gwman.__init__(self)
         # TODO: Добавить возможность проверки UDP портов
 
         self.host = host

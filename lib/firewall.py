@@ -11,6 +11,7 @@ class Pf(gwman):
     """Управление фаерволом pf"""
 
     def __init__(self, ip):
+        gwman.__init__(self)
 
         self.pf = self.find_exec("pfctl")
 

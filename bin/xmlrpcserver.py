@@ -22,6 +22,17 @@ from server_functions import GwManServerFunctions
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
+    def __init__(self, request, client_address, server):
+        hostsfile = 'conf/hosts.lst'
+        with open(hostsfile, 'r') as f:
+            hosts = map(lambda a: a.strip(), f.readlines())
+
+        if client_address[0] in hosts:
+            SimpleXMLRPCRequestHandler.__init__(self, request, client_address, server)
+        else:
+            logging.error("{} not in list of allowed hosts, cancelled!".format(client_address[0]))
+            raise ValueError("{} not in list of allowed hosts, cancelled!".format(client_address[0]))
+
 
 def main():
     HOST, PORT = "localhost", 1237

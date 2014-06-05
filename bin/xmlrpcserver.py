@@ -34,8 +34,9 @@ def main():
 
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
-    logging.info("Starting server")
+    logging.info("Star server")
     server.serve_forever()   
+    logging.info("Stop server")
 
 
 if __name__ == "__main__":

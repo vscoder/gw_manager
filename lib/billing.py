@@ -2,17 +2,34 @@
 # -*- coding: utf_8 -*-
 
 from os import path
+from UserDict import UserDict
 import ConfigParser
 import MySQLdb
 import MySQLdb.cursors
 
 from gwman import gwman
 
-class dbi(UserDict, gwman):
+class Dbi(UserDict, gwman):
+    _vg_params = {'vg_id': "id",
+                  'tar_id': "id тарифа",
+                  'id': "id агента",
+                  'login': "логин",
+                  'current_shape': "полоса пропускания",
+                  'archive': "удалена",
+                  'blocked': "заблокирована",
+                  }
+
+    _blocked = {0: "активна",
+                1: "заблокирована по балансу",
+                2: "заблокирована пользователем",
+                3: "заблокирована администратором",
+                4: "заблокирована по балансу(активная блокировка)",
+                5: "достигнут лимит трафика",
+                10: "отключена",
+                }
     
     def __init__(self, ip, conf='conf/main.conf'):
-        UserDict.__init__(self)
-        gwman.__init__(self)
+        super(Dbi, self).__init__()
 
         self.ip = ip
         self['ip'] = self.ip
@@ -23,8 +40,6 @@ class dbi(UserDict, gwman):
 
     def __del__(self):
         self.close_db()
-        UserDict.__del__(self)
-        gwman.__del__(self)
 
 
     @property
@@ -72,19 +87,22 @@ class dbi(UserDict, gwman):
             return dict(config.items(section))
 
 
-    def _vgroup(self, params):
+    def _vgroup(self, params=None):
         """Заполняет информацию об учетной записи
         с ip-адресом self.ip.
         params - Список полей в таблице vgroups"""
+        if not params:
+            params = self._vg_params
+
         if not self.ip:
             raise ValueError("dbi.ip must be assigned first")
 
-        if not type(params) == type(list()):
-            raise TypeError("'params' must be a list type")
+        if not type(params) == type(dict()):
+            raise TypeError("'params' must be a dict type")
 
         args = dict()
         args['ip'] = self.ip
-        args['fields'] = ", ".join(map(lambda field: "v.{}".format(field), params))
+        args['fields'] = ", ".join(map(lambda field: "v.{}".format(field), params.keys()))
         #print args
         sql = """
                 select
@@ -93,7 +111,7 @@ class dbi(UserDict, gwman):
                     staff st inner join
                     vgroups v on (st.vg_id = v.vg_id)
                 where
-                    ip = inet_aton('%(ip)s')
+                    st.segment = inet_aton('%(ip)s')
               """ % args
         #print sql
 
@@ -104,89 +122,37 @@ class dbi(UserDict, gwman):
             raise RuntimeError("'%s' belongs to many vgroups O_o... It's impossible!")
         elif self._cur_.rowcount < 0:
             raise RuntimeError("MySQLdb.cursor.execute return value < 0... Is it possible?")
-        else:
-            res = self._cur_.fetchall()
+        
+        # Here self._cur_.rowcount = 1
+        res = self._cur_.fetchall()
+        vg = res[0]
+        self.data.update(vg)
+        return True
 
-
-
-    def switchlist(self, pattern=''):
-        """Возвращает список свичей, ip-адреса которых
-        соответствуют mysql шаблону pattern"""
-        if not self._cur_:
-            raise RuntimeError("You must first Zabbix.open_db")
-
-        if not pattern:
-            pattern = ''
-
-        sql = """
-                select
-                    hi.ip ip,
-                    i.snmp_community community
-                from
-                    items i inner join
-                    interface hi on (i.hostid=hi.hostid)
-                where
-                    hi.type=2 and
-                    hi.ip !='' and
-                    hi.ip !='127.0.0.1' and
-                    hi.ip !='0.0.0.0' and
-                    hi.ip is not null and
-                    i.snmp_oid like '%1.3.6.1.2.1.1.3.0' and
-                    hi.ip like '%{}%'
-              """.format(pattern)
-
-        self._cur_.execute(sql)
-        #import ipdb;ipdb.set_trace()
-        if self._cur_.rowcount > 0:
-            res = self._cur_.fetchall()
-            return res
-        else:
 
 
 # TODO: Переписать тесты под класс dbi
 def main():
     # Обработка аргументов коммандной строки
     import argparse
-    from findmac import Switch
     parser = argparse.ArgumentParser(
         description="""Список свичей""")
     parser.add_argument('-c', '--conf', 
         metavar = 'FILE',
         help = 'Фаил конфигурации')
-    parser.add_argument('-p', '--pattern', 
+    parser.add_argument('-i', '--ip', 
         metavar = 'PATTERN',
-        help = 'Mysql-шаблон ip-адреса')
-    parser.add_argument('-m', '--mac',
-        metavar = 'MAC',
-        help = 'Mac-адрес для поиска')
-    parser.add_argument('-v', '--vlan',
-        metavar = 'VLAN',
-        help = 'Vlan для поиска mac-адреса')
+        help = 'ip-адрес для поиска информации')
     params = parser.parse_args()
 
     # Инициализация
-    zabbix = Zabbix(conf = params.conf)
-    
-    switches = zabbix.switchlist(params.pattern)
+    dbi = Dbi(ip = params.ip, conf = params.conf)
 
-    if not params.mac:
-        for ip, comm in switches:
-            print "switch ip: %s, community %s" % (ip, comm)
+    
+    if dbi._vgroup():
+        print dbi
     else:
-        for ip, comm in switches:
-            sw = Switch(host = ip)
-            sw.proto = 'snmp'
-            sw.vlan = params.vlan
-            sw.model = 'A3100'
-            sw.community = comm
-
-            port = sw.find_mac(params.mac)
-
-            if port:
-                print "MAC '%s' found on %s port %s" % (params.mac, ip, port)
-            else:
-                print "MAC '%s' not found on %s vlan %s" % (params.mac, ip, sw.vlan)
+        print "not found"
     
-
 if __name__ == "__main__":
     main()

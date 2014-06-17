@@ -71,11 +71,14 @@ class Dbi(UserDict, gwman):
         if not self.conf:
             raise ValueError("conf file must be set")
 
-        # TODO: Поместить в try ... except
         db_params = self.parse_conf('dbi')
-        self._db_ = MySQLdb.connect(**db_params)
-        self._cur_ = self._db_.cursor(MySQLdb.cursors.DictCursor)
-        #self._cur_ = self._db_.cursor()
+        try:
+            self._db_ = MySQLdb.connect(**db_params)
+            self._cur_ = self._db_.cursor(MySQLdb.cursors.DictCursor)
+            #self._cur_ = self._db_.cursor()
+        except MySQLdb.Error, e:
+            raise IOError("Error connecting to billing database!")
+
 
     def close_db(self):
         """Закрыть соединение с dbi._db_"""

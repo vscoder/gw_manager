@@ -10,8 +10,8 @@ import MySQLdb.cursors
 from gwman import gwman
 
 class Dbi(UserDict, gwman):
-    _params = {'v.vg_id': "id",
-               'v.tar_id': "id тарифа",
+    _params = {'v.vg_id': "id учетной записи",
+               'v.tar_id': "номер тарифа",
                'v.id': "id агента",
                'v.login': "логин",
                'v.current_shape': "полоса пропускания",
@@ -109,8 +109,8 @@ class Dbi(UserDict, gwman):
         args = dict()
         args['ip'] = self.ip
         ## К каждому имени поля добавить префикс 'v.'
-        #args['fields'] = ", ".join(map(lambda field: "v.{}".format(field), params.keys()))
-        args['fields'] = ", ".join(params.keys())
+        args['fields'] = ", ".join(map(lambda field: "{0} as '{0}'".format(field), params.keys()))
+        #args['fields'] = ", ".join(params.keys())
         #print args
         sql = """
                 select
@@ -171,7 +171,10 @@ def main():
 
     
     if dbi._getinfo():
-        print dbi
+        for k, v in dbi.data.items():
+            key = dbi._params.get(k) or k
+            value = v
+            print u'%s\t%s' % (key.decode('utf-8'), value)
     else:
         print "not found"
     

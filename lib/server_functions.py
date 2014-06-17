@@ -19,6 +19,7 @@ from mac_assoc import MacAssoc
 from ping import Ping
 from switches import Zabbix
 from findmac import Switch
+from billing import Dbi
 
 
 def as_dict(fn):
@@ -169,6 +170,25 @@ class GwManServerFunctions(object):
                           'ipstatus': ipstatus,
                           'shape_in': shape_in,
                           'shape_out': shape_out}
+
+        return result
+
+
+    @as_dict
+    def ip_info(self, ip):
+        """Get info about ip from billing"""
+        result = dict()
+
+        try:
+            dbi = Dbi(ip)
+        except Exception as e:
+            result['status'] = False
+            result['data'] = {'error:': e.message}
+            return result
+
+        
+        result['status'] = dbi._getinfo()
+        result['data'] = dbi.data
 
         return result
 

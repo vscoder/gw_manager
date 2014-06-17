@@ -10,14 +10,16 @@ import MySQLdb.cursors
 from gwman import gwman
 
 class Dbi(UserDict, gwman):
-    _vg_params = {'vg_id': "id",
-                  'tar_id': "id тарифа",
-                  'id': "id агента",
-                  'login': "логин",
-                  'current_shape': "полоса пропускания",
-                  'archive': "удалена",
-                  'blocked': "заблокирована",
-                  }
+    _params = {'v.vg_id': "id",
+               'v.tar_id': "id тарифа",
+               'v.id': "id агента",
+               'v.login': "логин",
+               'v.current_shape': "полоса пропускания",
+               'v.archive': "удалена",
+               'v.blocked': "статус",
+               't.descr': "тариф",
+               't.rent': "абонентская плата",
+               }
 
     _blocked = {0: "активна",
                 1: "заблокирована по балансу",
@@ -27,7 +29,8 @@ class Dbi(UserDict, gwman):
                 5: "достигнут лимит трафика",
                 10: "отключена",
                 }
-    
+
+
     def __init__(self, ip, conf='conf/main.conf'):
         super(Dbi, self).__init__()
 
@@ -66,6 +69,7 @@ class Dbi(UserDict, gwman):
         if not self.conf:
             raise ValueError("conf file must be set")
 
+        # TODO: Поместить в try ... except
         db_params = self.parse_conf('dbi')
         self._db_ = MySQLdb.connect(**db_params)
         self._cur_ = self._db_.cursor(MySQLdb.cursors.DictCursor)
@@ -87,29 +91,34 @@ class Dbi(UserDict, gwman):
             return dict(config.items(section))
 
 
-    def _vgroup(self, params=None):
+    def _getinfo(self, params=None):
         """Заполняет информацию об учетной записи
         с ip-адресом self.ip.
         params - Список полей в таблице vgroups"""
         if not params:
-            params = self._vg_params
+            params = self._params
 
         if not self.ip:
-            raise ValueError("dbi.ip must be assigned first")
+            raise ValueError("Dbi.ip must be assigned first")
 
         if not type(params) == type(dict()):
             raise TypeError("'params' must be a dict type")
 
         args = dict()
         args['ip'] = self.ip
-        args['fields'] = ", ".join(map(lambda field: "v.{}".format(field), params.keys()))
+        ## К каждому имени поля добавить префикс 'v.'
+        #args['fields'] = ", ".join(map(lambda field: "v.{}".format(field), params.keys()))
+        args['fields'] = ", ".join(params.keys())
         #print args
         sql = """
                 select
                     %(fields)s
                 from
-                    staff st inner join
-                    vgroups v on (st.vg_id = v.vg_id)
+                    staff st
+                    inner join vgroups v
+                    on (st.vg_id = v.vg_id)
+                    inner join tarifs t
+                    on (v.tar_id = t.tar_id)
                 where
                     st.segment = inet_aton('%(ip)s')
               """ % args
@@ -119,29 +128,35 @@ class Dbi(UserDict, gwman):
         if self._cur_.rowcount == 0:
             return None
         elif self._cur_.rowcount > 1:
-            raise RuntimeError("'%s' belongs to many vgroups O_o... It's impossible!")
+            raise RuntimeError("'%s' belongs to many vgroups O_o... It's impossible!" % self.ip)
         elif self._cur_.rowcount < 0:
             raise RuntimeError("MySQLdb.cursor.execute return value < 0... Is it possible?")
         
         # Here self._cur_.rowcount = 1
         res = self._cur_.fetchall()
         vg = res[0]
+
+        # Конвертация цифрового представления поля blocked в текстовое обозначение
+        # TODO: решить проблему с кодировкой
+        vg['blocked'] = self._blocked.get(vg.get('blocked'))
+        #if vg.get('blocked'):
+        #    vg['blocked'] = vg['blocked'].decode('utf-8')
+
         self.data.update(vg)
         return True
 
 
 
-# TODO: Переписать тесты под класс dbi
 def main():
     # Обработка аргументов коммандной строки
     import argparse
     parser = argparse.ArgumentParser(
-        description="""Список свичей""")
+        description="""Dbi""")
     parser.add_argument('-c', '--conf', 
         metavar = 'FILE',
         help = 'Фаил конфигурации')
     parser.add_argument('-i', '--ip', 
-        metavar = 'PATTERN',
+        metavar = 'IP',
         help = 'ip-адрес для поиска информации')
     params = parser.parse_args()
 
@@ -149,7 +164,7 @@ def main():
     dbi = Dbi(ip = params.ip, conf = params.conf)
 
     
-    if dbi._vgroup():
+    if dbi._getinfo():
         print dbi
     else:
         print "not found"

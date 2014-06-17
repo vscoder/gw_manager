@@ -3,7 +3,10 @@
 
 import socket
 
-class Scan(object):
+from gwman import gwman
+
+
+class Scan(gwman):
 
     _protocols = ['tcp', ]
     
@@ -41,7 +44,7 @@ class Scan(object):
         port = int(self.port)
 
         sock = socket.socket()
-        sock.settimeout(self.timeout)
+        sock.settimeout(float(self.timeout))
         try:
             sock.connect((host, port))
             #if results is not None:

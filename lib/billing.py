@@ -93,6 +93,13 @@ class Dbi(UserDict, gwman):
             return dict(config.items(section))
 
 
+    def field_descr(self, field):
+        """Возвращает значение ключа field
+        в словаре self._params"""
+        result = self._params.get(field) or field
+        return result
+
+
     def _getinfo(self, params=None):
         """Заполняет информацию об учетной записи
         с ip-адресом self.ip.
@@ -144,7 +151,7 @@ class Dbi(UserDict, gwman):
 
         # Конвертация цифрового представления поля blocked в текстовое обозначение
         # TODO: решить проблему с кодировкой
-        vg['blocked'] = self._blocked.get(vg.get('blocked'))
+        #vg['v.blocked'] = self._blocked.get(vg.get('v.blocked'))
         #if vg.get('blocked'):
         #    vg['blocked'] = vg['blocked'].decode('utf-8')
 
@@ -172,7 +179,7 @@ def main():
     
     if dbi._getinfo():
         for k, v in dbi.data.items():
-            key = dbi._params.get(k) or k
+            key = dbi.field_descr(k)
             value = v
             print u'%s\t%s' % (key.decode('utf-8'), value)
     else:

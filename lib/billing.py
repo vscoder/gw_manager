@@ -19,6 +19,8 @@ class Dbi(UserDict, gwman):
                'v.blocked': "статус",
                't.descr': "тариф",
                't.rent': "абонентская плата",
+               'agrm.number': "договор",
+               'a.name': "абонент",
                }
 
     _blocked = {0: "активна",
@@ -119,6 +121,10 @@ class Dbi(UserDict, gwman):
                     on (st.vg_id = v.vg_id)
                     inner join tarifs t
                     on (v.tar_id = t.tar_id)
+                    inner join agreements agrm
+                    on (v.agrm_id = agrm.agrm_id)
+                    inner join accounts a
+                    on (agrm.uid = a.uid)
                 where
                     st.segment = inet_aton('%(ip)s')
               """ % args

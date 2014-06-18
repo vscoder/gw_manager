@@ -1,6 +1,23 @@
 <form id=input_form name="{{route}}" action="/action/{{route}}" method="get">
 {{caption}}<br>
 <table id="form_table">
+%if defined('serversfile'):
+%with open(serversfile, 'r') as f:
+%servers = f.readlines()
+%end
+<tr>
+	<td>
+		Маршрутизатор
+	</td>
+	<td id=control_col>
+		<select name="rpcserver">
+%for server in servers:
+			<option>{{server}}</option>
+%end
+		</select>
+	</td>
+</tr>
+%end
 %for (name, descr) in fields:
 <tr>
 	<td>

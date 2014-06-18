@@ -44,20 +44,25 @@ def whoami():
 
 @gwman.route('/')
 def index():
-    logging.info("%s?%s" % (request.path, request.query_string))
+    logging.info("bottle index: %s?%s" % (request.path, request.query_string))
     forms = get_forms("%s/conf/forms.conf" % cwd)
     return template('index.tpl', forms=forms)
 
 
 @gwman.route('/action/<action>')
 def action(action):
-    logging.info("%s?%s" % (request.path, request.query_string))
+    logging.info("bottle action: %s?%s" % (request.path, request.query_string))
     forms = get_forms("%s/conf/forms.conf" % cwd)
 
-    conn_str = 'http://localhost:1237'
+    rpcserver = request.params.get('rpcserver') or '127.0.0.1'
+    logging.debug("bottle action: rpcserver = '{0}'".format(rpcserver))
+    conn_str = 'http://{0}:1237'.format(rpcserver)
     params = dict(request.params)
     params = {k: v.strip() for k, v in params.iteritems()}
-
+    try:
+        del params['rpcserver']
+    except:
+        pass
     result = xmlrpcrequest(conn_str, action, params)
     
 

@@ -187,7 +187,7 @@ class GwManServerFunctions(object):
             return result
 
         
-        result['status'] = dbi._getinfo()
+        result['status'] = dbi._ipinfo()
         result['data'] = {dbi.field_descr(k).decode('utf-8'): v for k, v in dbi.items()}
 
         return result

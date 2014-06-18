@@ -103,7 +103,7 @@ class Dbi(UserDict, gwman):
         return result
 
 
-    def _getinfo(self, params=None):
+    def _ipinfo(self, params=None):
         """Заполняет информацию об учетной записи
         с ip-адресом self.ip.
         params - Список полей в таблице vgroups"""
@@ -180,7 +180,7 @@ def main():
     dbi = Dbi(ip = params.ip, conf = params.conf)
 
     
-    if dbi._getinfo():
+    if dbi._ipinfo():
         for k, v in dbi.data.items():
             key = dbi.field_descr(k)
             value = v

@@ -142,7 +142,7 @@ class Dbi(UserDict, gwman):
 
         self._cur_.execute(sql)
         if self._cur_.rowcount == 0:
-            return None
+            return False
         elif self._cur_.rowcount > 1:
             raise RuntimeError("'%s' belongs to many vgroups O_o... It's impossible!" % self.ip)
         elif self._cur_.rowcount < 0:

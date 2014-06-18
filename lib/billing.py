@@ -32,6 +32,24 @@ class Dbi(UserDict, gwman):
                 10: "отключена",
                 }
 
+    """Каждое запись словаря это структура:
+    'идентификатор поля': ('имя поля mysql', 'описание поля', включить_в_выборку?, группировать?),
+    """
+    _stat_fields = {
+        'timefrom': ("timefrom", "время начала сессии", True, True),
+        'timeto': ("timeto", "время окончания сессии", True, True),
+        'ip': ("ip", "локальный ip", True, True),
+        'ipport': ("ipport", "локальный порт", True, True),
+        'remote': ("remote", "удаленный ip", True, True),
+        'remport': ("remport", "удаленный порт", True, True),
+        'in': ("sum(cin) as in", "входящий, байт", True, True),
+        'out': ("sum(cout) as out", "исходящий, байт", True, True),
+        'vg_id': ("vg_id", "учетная запись", False, False),
+        'agrm_id': ("agrm_id", "договор", False, False),
+        'uid': ("uid", "абонент", False, False),
+        'tar_id': ("tar_id", "тариф", False, False),
+        }
+
 
     def __init__(self, ip, conf='conf/main.conf'):
         super(Dbi, self).__init__()
@@ -41,10 +59,14 @@ class Dbi(UserDict, gwman):
 
         self.conf = conf
 
-        self.open_db()
+        self._dblist_ = list()
+        self._db_ = dict()
+        self._cur_ = dict()
+
+        self.open_db('dbi')
 
     def __del__(self):
-        self.close_db()
+        self.close_db('dbi')
 
 
     @property
@@ -61,29 +83,31 @@ class Dbi(UserDict, gwman):
 
         self._conf = filepath
 
-        self.close_db()
-        self.open_db()
+        for db in self._db_.keys():
+            self.close_db(db)
+            self.open_db(db)
 
 
-    def open_db(self):
-        """Подключиться к БД на основе секции [dbi] файла конфигурации
-        и задать текущие dbi._db_ и dbi._cursor_"""
+    def open_db(self, db):
+        """Подключиться к БД на основе секции [<db>] файла конфигурации.
+        добавить в словарь self._db_ текущее подключение и в self._cur_ курсор"""
         if not self.conf:
             raise ValueError("conf file must be set")
 
-        db_params = self.parse_conf('dbi')
+        db_params = self.parse_conf(db)
         try:
-            self._db_ = MySQLdb.connect(**db_params)
-            self._cur_ = self._db_.cursor(MySQLdb.cursors.DictCursor)
-            #self._cur_ = self._db_.cursor()
+            self._db_[db] = MySQLdb.connect(**db_params)
+            self._cur_[db] = self._db_.cursor(MySQLdb.cursors.DictCursor)
+            #self._cur_[db] = self._db_.cursor()
         except MySQLdb.Error, e:
-            raise IOError("Error connecting to billing database!")
+            raise IOError("Error connecting to database '{0}'!".format(db))
 
 
-    def close_db(self):
+    def close_db(self, db):
         """Закрыть соединение с dbi._db_"""
         try:
-            self._db_.close()
+            self._db_[db].close()
+            del self._cur_[db]
         except:
             return False
 
@@ -101,6 +125,16 @@ class Dbi(UserDict, gwman):
         в словаре self._params"""
         result = self._params.get(field) or field
         return result
+
+    def _agent_id(self, ip=''):
+        """Возвращает id агента, на котором ip-адрес ip.
+        если self['ip'] отличается от ip, то запрос в базу
+        иначе вернет self['id']""" 
+        _ip = ip and self._check_ip(ip)
+        if _ip == self.data.get('ip'):
+            result = self.data.get('id')
+        else:
+            #TODO: получение id агента из БД
 
 
     def _ipinfo(self, params=None):
@@ -140,16 +174,17 @@ class Dbi(UserDict, gwman):
               """ % args
         #print sql
 
-        self._cur_.execute(sql)
-        if self._cur_.rowcount == 0:
+        cur = self._cur_['dbi']
+        cur.execute(sql)
+        if cur.rowcount == 0:
             return False
-        elif self._cur_.rowcount > 1:
+        elif cur.rowcount > 1:
             raise RuntimeError("'%s' belongs to many vgroups O_o... It's impossible!" % self.ip)
-        elif self._cur_.rowcount < 0:
+        elif cur.rowcount < 0:
             raise RuntimeError("MySQLdb.cursor.execute return value < 0... Is it possible?")
         
         # Here self._cur_.rowcount = 1
-        res = self._cur_.fetchall()
+        res = cur.fetchall()
         vg = res[0]
 
         # Конвертация цифрового представления поля blocked в текстовое обозначение
@@ -161,6 +196,23 @@ class Dbi(UserDict, gwman):
         self.data.update(vg)
         return True
 
+
+    def sum_stat(self, timefrom='1901-12-13', timeto='2038-01-19'):
+        """Параметры: условия отбора
+        возвращает структуру:
+        {'header':
+            (имяполя1, имяполя2, имяполя3, ..., имяполяХ),
+         'body':
+            (
+                (поле1, поле2, поле3, ..., полеХ),
+                (поле1, поле2, поле3, ..., полеХ),
+            ),
+         'footer':
+            ("", суммаполя2, суммаполя3, ..., пусто)
+        }
+        """
+        if not self.ip:
+            raise ValueError("Dbi.ip must be assigned first")
 
 
 def main():

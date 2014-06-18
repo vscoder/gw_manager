@@ -190,8 +190,6 @@ class GwManServerFunctions(object):
         result['status'] = dbi._getinfo()
         result['data'] = {dbi.field_descr(k).decode('utf-8'): v for k, v in dbi.items()}
 
-        print result
-
         return result
 
     

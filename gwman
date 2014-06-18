@@ -150,25 +150,25 @@ status_server () {
 
 case $1 in
 start	)
-	start_http
+	#start_http
 	start_server
 	start_bottle
 ;;
 stop	)
 	stop_bottle
 	stop_server
-	stop_http
+	#stop_http
 ;;
 restart	)
 	stop_server
 	stop_http
 	stop_bottle
-	start_http
+	#start_http
 	start_server
 	start_bottle
 ;;
 status	)
-	status_http
+	#status_http
 	status_server
 	status_bottle
 ;;

@@ -1,4 +1,6 @@
-<div id="status">Результат выполнения: <img src="/static/pict/{{"yes" if status else "no"}}.png" alt="{{"yes" if status else "no"}}"></div>
+<div id="status">
+Результат выполнения: <img src="/static/pict/{{"yes" if status else "no"}}.png" alt="{{"yes" if status else "no"}}">
+</div>
 <table id="command_out" class="command_out">
 %for key, value in data.items():
 <tr>

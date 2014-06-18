@@ -56,6 +56,14 @@ class gwman(object):
         self._host = value
 
 
+    def _check_ip(self, ip):
+        """Если ip адрес валидный, вернет ip
+        иначе exception"""
+        if not self._re_ip.match(ip):
+            return False
+        else:
+            return ip
+
     @property
     def ip(self):
         """ip адрес"""
@@ -63,9 +71,8 @@ class gwman(object):
 
     @ip.setter
     def ip(self, ip):
-        if not self._re_ip.match(ip):
+        if not self._check_ip(ip):
             raise ValueError("%s is not valid ip address" % ip)
-
         self._ip = ip
 
 

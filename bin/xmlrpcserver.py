@@ -35,7 +35,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 
 
 def main():
-    HOST, PORT = "localhost", 1237
+    HOST, PORT = "0.0.0.0", 1237
 
     server = SimpleXMLRPCServer((HOST, PORT),
                                 requestHandler=RequestHandler)

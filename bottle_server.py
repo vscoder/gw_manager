@@ -75,7 +75,7 @@ def get_forms(conf_file):
     начинающихся с form_.
     Каждый параметр секции обрабатывается ast.literal_eval(),
     строковые значения должны быть в кавычках"""
-    logging.debug("get_forms:\t%s" % str(conf_file))
+    logging.debug("get_forms file:\t%s" % str(conf_file))
     forms = list()
     config = ConfigParser.RawConfigParser()
     config.read(conf_file)
@@ -98,18 +98,18 @@ def xmlrpcrequest(conn_str, func, params):
     """Выполняет xmlrpc запрос к серверу conn_str.
     Возвращает результат выполнения функции func
     с параметрами params"""
-    logging.debug("xmlrpcrequest:\t%s" % str((conn_str, func, params)))
+    logging.info("xmlrpcrequest call:\t%s" % str((conn_str, func, params)))
 
     server = xmlrpclib.ServerProxy(conn_str)
-    logging.debug("xmlrpcrequest:\t%s" % server)
+    #logging.debug("xmlrpcrequest server:\t%s" % server)
 
     methods = server.system.listMethods()
-    logging.debug("xmlrpcrequest:\t%s" % methods)
+    logging.debug("xmlrpcrequest methods:\t%s" % methods)
     if not func in methods:
         raise ValueError("%s not implemented in server_functions" % func)
 
     method = getattr(server, func)
-    logging.debug("xmlrpcrequest:\ttype of 'method' is %s" % type(method))
+    #logging.debug("xmlrpcrequest:\ttype of 'method' is %s" % type(method))
 
     result = method(params)
     return result

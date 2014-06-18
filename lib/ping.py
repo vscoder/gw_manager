@@ -10,15 +10,15 @@ from gwman import gwman
 class Ping(gwman):
     """Пинг средствами комманды ping"""
 
-    def __init__(self, host='127.0.0.1'):
+    def __init__(self, host='127.0.0.1', count='4'):
         gwman.__init__(self)
 
         self.ping = self.find_exec("ping")
 
         self.host = host
 
-        self._count = "4"
-        self.timeout = 1000
+        self._count = count
+        #self.timeout = 0
 
 
     @property
@@ -41,7 +41,8 @@ class Ping(gwman):
         if not self.host:
             raise RuntimeError("host must be set")
         
-        cmd = [self.ping, '-c', self.count, '-W', self.timeout, self.host]
+        #cmd = [self.ping, '-c', self.count, '-W', self.timeout, self.host]
+        cmd = [self.ping, '-c', self.count, self.host]
         PIPE = subprocess.PIPE
         ping = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         output = ping.stdout.read()
@@ -60,7 +61,7 @@ def main():
     params = parser.parse_args()
 
     ping = Ping(params.host)
-    ping.timeout = 1
+    #ping.timeout = 1
     result = ping.ping_host()
 
     print "returncode: %s\n%s" % result

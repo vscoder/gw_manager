@@ -186,9 +186,8 @@ class GwManServerFunctions(object):
             result['data'] = {'error:': e.message}
             return result
 
-        
-        result['status'] = dbi._ipinfo()
-        result['data'] = {dbi.field_descr(k).decode('utf-8'): v for k, v in dbi.items()}
+        result['status'] = True
+        result['data'] = {dbi.field_descr(k).decode('utf-8'): v for k, v in dbi._ipinfo.items()}
 
         return result
 

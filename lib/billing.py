@@ -30,18 +30,18 @@ class Dbi(gwman):
         'идентификатор поля': ('поле в mysql', 'описание поля', включить_в_выборку?, группировать?, сортировать?),
         """
         self._stat_fields = {
-            'dfrom': ["s.timefrom", "время начала сессии", True, True, False],
-            'dto': ["s.timeto", "время окончания сессии", False, False, False],
-            'lip': ["inet_ntoa(s.ip)", "локальный ip", True, True, False],
-            'lport': ["s.ipport", "локальный порт", True, True, False],
-            'rip': ["inet_ntoa(s.remote)", "удаленный ip", True, True, False],
-            'rport': ["s.remport", "удаленный порт", True, True, False],
-            'tin': ["sum(s.cin)", "входящий, байт", True, False, False],
-            'tout': ["sum(s.cout)", "исходящий, байт", True, False, False],
-            'vgid': ["s.vg_id", "учетная запись", False, False, False],
-            'agrmid': ["s.agrm_id", "договор", False, False, False],
-            'userid': ["s.uid", "абонент", False, False, False],
-            'tarid': ["s.tar_id", "тариф", False, False, False],
+            'dfrom': ["s.timefrom", "время начала сессии", True, True, 0],
+            'dto': ["s.timeto", "время окончания сессии", False, False, 0],
+            'lip': ["inet_ntoa(s.ip)", "локальный ip", True, True, 0],
+            'lport': ["s.ipport", "локальный порт", True, True, 0],
+            'rip': ["inet_ntoa(s.remote)", "удаленный ip", True, True, 0],
+            'rport': ["s.remport", "удаленный порт", True, True, 0],
+            'tin': ["sum(s.cin)", "входящий, байт", True, False, 0],
+            'tout': ["sum(s.cout)", "исходящий, байт", True, False, 0],
+            'vgid': ["s.vg_id", "учетная запись", False, False, 0],
+            'agrmid': ["s.agrm_id", "договор", False, False, 0],
+            'userid': ["s.uid", "абонент", False, False, 0],
+            'tarid': ["s.tar_id", "тариф", False, False, 0],
             }
 
         # Параметры ip-адреса, получаемые из 'dbi'
@@ -304,8 +304,37 @@ class Dbi(gwman):
         result = [row.get('tbl') for row in rows]
         return result
 
+    def _set_detail(self, det='day'):
+        """Настройка self._stat_fields в зависимости от типа детализации"""
+        # Пример 'dfrom': ["s.timefrom", "время начала сессии", <Отображать>, <Группировать>, <Сортировать>],
+        assert type(det) == type(str()), "_detalisation: det must be string type"
+        if det == 'day':
+            self._stat_fields['dfrom'][0] = 'day(s.timefrom)'
+            self._stat_fields['dfrom'][4] = True
+            self._stat_fields['lip'][2] = False
+            self._stat_fields['lport'][2] = False
+            self._stat_fields['rip'][2] = False
+            self._stat_fields['rport'][2] = False
+        elif det == 'hour':
+            self._stat_fields['dfrom'][0] = 'hour(s.timefrom)'
+            self._stat_fields['dfrom'][4] = True
+            self._stat_fields['lip'][2] = False
+            self._stat_fields['lport'][2] = False
+            self._stat_fields['rip'][2] = False
+            self._stat_fields['rport'][2] = False
+        elif det == 'day_file':
+            self._stat_fields['dfrom'][2] = False
+            self._stat_fields['tin'][4] = -1
+        elif det == 'day_file':
+            self._stat_fields['dfrom'][0] = 's.timefrom'
+            self._stat_fields['dfrom'][4] = 1
+        else:
+            raise ValueError("'{0}' must be in [day|hour|day_file|session_file]".format(det))
 
-    def _get_stat(self, timefrom='19011213', timeto='20380119', sort='dfrom'):
+        return True
+
+
+    def _get_stat(self, timefrom='19011213', timeto='20380119', det='day'):
         """Параметры: условия отбора
         возвращает структуру:
         {'header':
@@ -320,12 +349,8 @@ class Dbi(gwman):
         if not self.ip:
             raise ValueError("Dbi.ip must be assigned first")
 
-        try:
-            self._stat_fields[sort][4] = True
-        except KeyError, e:
-            raise KeyError("key '{}' not found in self._stat_fields".format(sort))
-
-        #self._stat_fields['dfrom'][0] = 'day(s.timefrom)'
+        # Установка степени детализации
+        self._set_detail(det)
 
         # Формиррование параметров запроса
         # Поля для выборки и группировка с сортировкой
@@ -343,7 +368,10 @@ class Dbi(gwman):
             if v[3]:
                 group.append("`{}`".format(k)) 
             if v[4]:
-                sort.append("`{}`".format(k)) 
+                desc = ''
+                if v[4] < 0:
+                    desc = 'desc'
+                sort.append("`{0}` {1}".format(k, desc)) 
             fields.append("{0} as '{1}'".format(v[0], k))
         cond = "ip = inet_aton('{ip}')".format(ip = self.ip)
         
@@ -376,7 +404,6 @@ class Dbi(gwman):
                 }
 
         return stat
-
 
 
 def main():

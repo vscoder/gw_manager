@@ -32,24 +32,7 @@ class Dbi(UserDict, gwman):
                 10: "отключена",
                 }
 
-    """Каждое запись словаря это структура:
-    'идентификатор поля': ('имя поля mysql', 'описание поля', включить_в_выборку?, группировать?, сортировать?),
-    """
-    _stat_fields = {
-        'dfrom': ["s.timefrom", "время начала сессии", True, True, False],
-        'dto': ["s.timeto", "время окончания сессии", False, False, False],
-        'lip': ["inet_ntoa(s.ip)", "локальный ip", True, True, False],
-        'lport': ["s.ipport", "локальный порт", True, True, False],
-        'rip': ["inet_ntoa(s.remote)", "удаленный ip", True, True, False],
-        'rport': ["s.remport", "удаленный порт", True, True, False],
-        'tin': ["sum(s.cin)", "входящий, байт", True, False, False],
-        'tout': ["sum(s.cout)", "исходящий, байт", True, False, False],
-        'vgid': ["s.vg_id", "учетная запись", False, False, False],
-        'agrmid': ["s.agrm_id", "договор", False, False, False],
-        'userid': ["s.uid", "абонент", False, False, False],
-        'tarid': ["s.tar_id", "тариф", False, False, False],
-        }
-
+    
 
     def __init__(self, ip, conf='conf/main.conf'):
         super(Dbi, self).__init__()
@@ -64,6 +47,25 @@ class Dbi(UserDict, gwman):
         self._cur_ = dict()
 
         self.open_db('dbi')
+
+        # Instance properties
+        """Каждое запись словаря это структура:
+        'идентификатор поля': ('поле в mysql', 'описание поля', включить_в_выборку?, группировать?, сортировать?),
+        """
+        _stat_fields = {
+            'dfrom': ["s.timefrom", "время начала сессии", True, True, False],
+            'dto': ["s.timeto", "время окончания сессии", False, False, False],
+            'lip': ["inet_ntoa(s.ip)", "локальный ip", True, True, False],
+            'lport': ["s.ipport", "локальный порт", True, True, False],
+            'rip': ["inet_ntoa(s.remote)", "удаленный ip", True, True, False],
+            'rport': ["s.remport", "удаленный порт", True, True, False],
+            'tin': ["sum(s.cin)", "входящий, байт", True, False, False],
+            'tout': ["sum(s.cout)", "исходящий, байт", True, False, False],
+            'vgid': ["s.vg_id", "учетная запись", False, False, False],
+            'agrmid': ["s.agrm_id", "договор", False, False, False],
+            'userid': ["s.uid", "абонент", False, False, False],
+            'tarid': ["s.tar_id", "тариф", False, False, False],
+            }
 
     def __del__(self):
         for db in self._db_.keys():

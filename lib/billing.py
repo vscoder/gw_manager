@@ -36,18 +36,18 @@ class Dbi(UserDict, gwman):
     'идентификатор поля': ('имя поля mysql', 'описание поля', включить_в_выборку?, группировать?, сортировать?),
     """
     _stat_fields = {
-        'timefrom': ("timefrom", "время начала сессии", True, True, False),
-        'timeto': ("timeto", "время окончания сессии", True, True, False),
-        'ip': ("ip", "локальный ip", True, True, False),
-        'ipport': ("ipport", "локальный порт", True, True, False),
-        'remote': ("remote", "удаленный ip", True, True, False),
-        'remport': ("remport", "удаленный порт", True, True, False),
-        'in': ("sum(cin)", "входящий, байт", True, True, False),
-        'out': ("sum(cout)", "исходящий, байт", True, True, False),
-        'vg_id': ("vg_id", "учетная запись", False, False, False),
-        'agrm_id': ("agrm_id", "договор", False, False, False),
-        'uid': ("uid", "абонент", False, False, False),
-        'tar_id': ("tar_id", "тариф", False, False, False),
+        'dfrom': ["s.timefrom", "время начала сессии", True, True, False],
+        'dto': ["s.timeto", "время окончания сессии", False, False, False],
+        'lip': ["inet_ntoa(s.ip)", "локальный ip", True, True, False],
+        'lport': ["s.ipport", "локальный порт", True, True, False],
+        'rip': ["inet_ntoa(s.remote)", "удаленный ip", True, True, False],
+        'rport': ["s.remport", "удаленный порт", True, True, False],
+        'tin': ["sum(s.cin)", "входящий, байт", True, False, False],
+        'tout': ["sum(s.cout)", "исходящий, байт", True, False, False],
+        'vgid': ["s.vg_id", "учетная запись", False, False, False],
+        'agrmid': ["s.agrm_id", "договор", False, False, False],
+        'userid': ["s.uid", "абонент", False, False, False],
+        'tarid': ["s.tar_id", "тариф", False, False, False],
         }
 
 
@@ -66,7 +66,7 @@ class Dbi(UserDict, gwman):
         self.open_db('dbi')
 
     def __del__(self):
-        for db in self.data._db_.keys():
+        for db in self._db_.keys():
             self.close_db(db)
 
 
@@ -84,9 +84,10 @@ class Dbi(UserDict, gwman):
 
         self._conf = filepath
 
-        for db in self._db_.keys():
-            self.close_db(db)
-            self.open_db(db)
+        #if type(self._db_) == type(list()):
+        #    for db in self._db_.keys():
+        #        self.close_db(db)
+        #        self.open_db(db)
 
 
     def open_db(self, db):
@@ -98,10 +99,10 @@ class Dbi(UserDict, gwman):
         db_params = self.parse_conf(db)
         try:
             self._db_[db] = MySQLdb.connect(**db_params)
-            self._cur_[db] = self._db_.cursor(MySQLdb.cursors.DictCursor)
+            self._cur_[db] = self._db_[db].cursor(MySQLdb.cursors.DictCursor)
             #self._cur_[db] = self._db_.cursor()
         except MySQLdb.Error, e:
-            raise IOError("Error connecting to database '{0}'!".format(db))
+            raise IOError("Error connecting to database '{0}'!\n{1}".format(db, e))
 
 
     def close_db(self, db):
@@ -143,7 +144,7 @@ class Dbi(UserDict, gwman):
         if not _ip:
             raise ValueError("_agent_id(ip): ip or self['ip'] must be set!")
         if _ip == self.data.get('ip'):
-            result = self.data.get('id')
+            result = self.data.get('v.id')
         else:
             sql = """
                 select
@@ -177,11 +178,11 @@ class Dbi(UserDict, gwman):
         agent = id агента"""
         _param_err = """params 'timefrom' and 'timeto' must be string representation of date YYYYMMDD
                         param 'agent' must be string representation of integer with length <= 3"""
-        _agent = str(agent) or self._agent_id()
+        _agent = agent or self._agent_id()
         assert type(timefrom) == type(str()) and len(timefrom) == 8, _param_err
         assert type(timeto) == type(str()) and len(timefrom) == 8, _param_err
         assert timefrom.isdigit() and timeto.isdigit(), _param_err
-        assert _agent.isdigit() and len(timefrom) <= 3, _param_err
+        assert _agent.isdigit() and len(_agent) <= 3, _param_err
         
         # Получение имени БД со статистикой
         _dbconf = self.data.get('dbconf')
@@ -190,8 +191,7 @@ class Dbi(UserDict, gwman):
             self.open_db('billstat')
         db = _dbconf['billstat']['db']
 
-        # Format agent id as '00N'
-        _agent = "{:03d}".format(_agent)
+        _agent = "{:03d}".format(int(_agent))
         prefix = "user{0}".format(_agent)
         
         sql = """
@@ -201,7 +201,7 @@ class Dbi(UserDict, gwman):
                     information_schema.TABLES t
                 where
                     t.TABLE_SCHEMA = '{db}'
-                    and t.TABLE_NAME like '{prefix}'
+                    and t.TABLE_NAME like '{prefix}%'
                     and substr(TABLE_NAME,8) between '{dfrom}' and '{dto}'
                 order by
                     t.TABLE_NAME
@@ -280,7 +280,7 @@ class Dbi(UserDict, gwman):
         return True
 
 
-    def sum_stat(self, timefrom='19011213', timeto='20380119', sort='timefrom'):
+    def _stat(self, timefrom='19011213', timeto='20380119', sort='dfrom'):
         """Параметры: условия отбора
         возвращает структуру:
         {'header':
@@ -290,8 +290,6 @@ class Dbi(UserDict, gwman):
                 (поле1, поле2, поле3, ..., полеХ),
                 (поле1, поле2, поле3, ..., полеХ),
             ),
-         'footer':
-            ("", суммаполя2, суммаполя3, ..., пусто)
         }
         """
         if not self.ip:
@@ -302,10 +300,11 @@ class Dbi(UserDict, gwman):
         except KeyError, e:
             raise KeyError("key '{}' not found in self._stat_fields".format(sort))
 
-        self._stat_fields['timefrom'][0] = 'day(timefrom)'
+        #self._stat_fields['dfrom'][0] = 'day(s.timefrom)'
 
         # Формиррование параметров запроса
         # Поля для выборки и группировка с сортировкой
+        header = list()
         fields = list()
         group = list()
         sort = list()
@@ -313,13 +312,15 @@ class Dbi(UserDict, gwman):
             # Если поле не включать в отбор, то переходим к следующему
             if not v[2]:
                 continue
+            # Добавляем заголовок столбца в header
+            header.append(v[1])
             # Если группировка или сортировка по полю, добавляем в соответствующий список
             if v[3]:
-                group.append(k) 
+                group.append("`{}`".format(k)) 
             if v[4]:
-                sort.append(k) 
+                sort.append("`{}`".format(k)) 
             fields.append("{0} as '{1}'".format(v[0], k))
-        cond = "ip = inet_aton('{ip}')".format(self.ip)
+        cond = "ip = inet_aton('{ip}')".format(ip = self.ip)
         
         params = {'fields': ", ".join(fields),
                   'cond': cond,
@@ -329,31 +330,34 @@ class Dbi(UserDict, gwman):
 
         # Из каждой таблицы получаем статистику
         data = list()
-        cur = self._cur_['billstat']
         tables = self._tables(timefrom, timeto)
+        cur = self._cur_['billstat']
         for table in tables:
             params['table'] = table
             sql = """
                     select {fields}
-                    from {table}
+                    from {table} s
                     where {cond}
                     group by {group}
-                    order by {order}
+                    order by {sort}
                   """.format(**params)
+            #print "_stat: sql -- ", sql
             cur.execute(sql)
             for row in cur.fetchall():
-                data.expand(row.values())
+                data.append(row.values())
 
-        result = {'header': list(),
-                  'body': data,
-                  'footer': list(),
-                  }
+        stat = {'header': header,
+                'body': data,
+                }
+
+        return stat
 
 
 
 def main():
     # Обработка аргументов коммандной строки
     import argparse
+    import sys
     parser = argparse.ArgumentParser(
         description="""Dbi""")
     parser.add_argument('-c', '--conf', 
@@ -362,6 +366,12 @@ def main():
     parser.add_argument('-i', '--ip', 
         metavar = 'IP',
         help = 'ip-адрес для поиска информации')
+    parser.add_argument('-f', '--dfrom', 
+        metavar = 'YYYYMMDD',
+        help = 'Начальная дата статистики')
+    parser.add_argument('-t', '--dto', 
+        metavar = 'YYYYMMDD',
+        help = 'Конечная дата статистики (исключая)')
     params = parser.parse_args()
 
     # Инициализация
@@ -374,7 +384,12 @@ def main():
             value = v
             print u'%s\t%s' % (key.decode('utf-8'), value)
     else:
-        print "not found"
+        sys.exit("not found")
+
+    stat = dbi._stat(params.dfrom, params.dto, 'dfrom')
+    print stat['header']
+    for row in stat['body']:
+        print row
     
 if __name__ == "__main__":
     main()

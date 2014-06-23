@@ -190,6 +190,32 @@ class GwManServerFunctions(object):
         result['data'] = {dbi.field_descr(k).decode('utf-8'): v for k, v in dbi._ipinfo.items()}
 
         return result
+    
+    
+    @as_dict
+    def ip_stat(self, ip, dfrom, dto, det):
+        """Get info about ip from billing"""
+        result = dict()
+
+        try:
+            dbi = Dbi(ip)
+            _stat = dbi._get_stat(dfrom, dto, det)
+            print _stat
+        except Exception as e:
+            result['status'] = False
+            result['data'] = {'error:': e.message}
+            return result
+
+        #TODO: data.tpl должен принимать в качестве параметров список а не словарь
+        # Необходимо переделать все функции!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        stat = list()
+        stat.append(_stat['header'])
+        stat.extend(_stat['body'])
+
+        result['status'] = True
+        result['data'] = stat
+
+        return result
 
     
     @as_dict

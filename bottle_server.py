@@ -90,6 +90,7 @@ def get_forms(conf_file):
         form = dict()
         for k, v in config.items(form_name):
             form[k] = literal_eval(config.get(form_name, k))
+        #TODO: реализовать обработку параметра serversfile
         forms.append(form)
         #name = config.get(form_name, 'name')
         #caption = config.get(form_name, 'caption')

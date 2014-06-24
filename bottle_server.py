@@ -118,6 +118,7 @@ def xmlrpcrequest(conn_str, func, params):
     #logging.debug("xmlrpcrequest:\ttype of 'method' is %s" % type(method))
 
     result = method(params)
+    logging.debug("xmlrpcrequest result:\t{0}".format(result))
     return result
 
 

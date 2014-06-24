@@ -2,7 +2,7 @@
 # -*- coding: utf_8 -*-
 
 from os import path
-from UserDict import UserDict
+from collections import OrderedDict
 import ConfigParser
 import MySQLdb
 import MySQLdb.cursors
@@ -10,13 +10,13 @@ import MySQLdb.cursors
 from gwman import gwman
 
 class Dbi(gwman):
-    _blocked = {0: "активна",
-            1: "заблокирована по балансу",
-            2: "заблокирована пользователем",
-            3: "заблокирована администратором",
-            4: "заблокирована по балансу(активная блокировка)",
-            5: "достигнут лимит трафика",
-            10: "отключена",
+    _blocked = {0: u"активна",
+            1: u"заблокирована по балансу",
+            2: u"заблокирована пользователем",
+            3: u"заблокирована администратором",
+            4: u"заблокирована по балансу(активная блокировка)",
+            5: u"достигнут лимит трафика",
+            10: u"отключена",
             }
 
     
@@ -29,35 +29,35 @@ class Dbi(gwman):
         """Каждое запись словаря это структура:
         'идентификатор поля': ('поле в mysql', 'описание поля', включить_в_выборку?, группировать?, сортировать?),
         """
-        self._stat_fields = {
-            'dfrom': ["s.timefrom", "время начала сессии", True, True, 0],
-            'dto': ["s.timeto", "время окончания сессии", False, False, 0],
-            'lip': ["inet_ntoa(s.ip)", "локальный ip", True, True, 0],
-            'lport': ["s.ipport", "локальный порт", True, True, 0],
-            'rip': ["inet_ntoa(s.remote)", "удаленный ip", True, True, 0],
-            'rport': ["s.remport", "удаленный порт", True, True, 0],
-            'tin': ["sum(s.cin)", "входящий, байт", True, False, 0],
-            'tout': ["sum(s.cout)", "исходящий, байт", True, False, 0],
-            'vgid': ["s.vg_id", "учетная запись", False, False, 0],
-            'agrmid': ["s.agrm_id", "договор", False, False, 0],
-            'userid': ["s.uid", "абонент", False, False, 0],
-            'tarid': ["s.tar_id", "тариф", False, False, 0],
-            }
+        self._stat_fields = OrderedDict([
+            ('dfrom', ["s.timefrom", "время начала сессии", True, True, 0]),
+            ('dto', ["s.timeto", "время окончания сессии", False, False, 0]),
+            ('lip', ["inet_ntoa(s.ip)", "локальный ip", True, True, 0]),
+            ('lport', ["s.ipport", "локальный порт", True, True, 0]),
+            ('rip', ["inet_ntoa(s.remote)", "удаленный ip", True, True, 0]),
+            ('rport', ["s.remport", "удаленный порт", True, True, 0]),
+            ('tin', ["sum(s.cin)", "входящий, байт", True, False, 0]),
+            ('tout', ["sum(s.cout)", "исходящий, байт", True, False, 0]),
+            ('vgid', ["s.vg_id", "учетная запись", False, False, 0]),
+            ('agrmid', ["s.agrm_id", "договор", False, False, 0]),
+            ('userid', ["s.uid", "абонент", False, False, 0]),
+            ('tarid', ["s.tar_id", "тариф", False, False, 0]),
+            ])
 
         # Параметры ip-адреса, получаемые из 'dbi'
-        self._ip_params = {
-            'v.vg_id': "id учетной записи",
-            'v.tar_id': "номер тарифа",
-            'v.id': "id агента",
-            'v.login': "логин",
-            'v.current_shape': "полоса пропускания",
-            'v.archive': "удалена",
-            'v.blocked': "статус",
-            't.descr': "тариф",
-            't.rent': "абонентская плата",
-            'agrm.number': "договор",
-            'a.name': "абонент",
-            }
+        self._ip_params = OrderedDict([
+            ('a.name', "абонент"),
+            ('v.login', "логин"),
+            ('v.blocked', "статус"),
+            ('t.descr', "тариф"),
+            ('v.current_shape', "полоса пропускания"),
+            ('t.rent', "абонентская плата"),
+            ('agrm.number', "договор"),
+            ('v.vg_id', "id учетной записи"),
+            ('v.tar_id', "номер тарифа"),
+            ('v.id', "id агента"),
+            ('v.archive', "удалена"),
+            ])
 
         # Имя конфиг-файла
         self.conf = conf
@@ -71,7 +71,7 @@ class Dbi(gwman):
         self.open_db(self._dbi)
 
         # Инициализация информации об ip-адоесе
-        self._ipinfo = dict()
+        self._ipinfo = OrderedDict()
         self.ip = ip
         self._fill_ipinfo()
 
@@ -122,6 +122,7 @@ class Dbi(gwman):
         try:
             self._db[db]['conn'] = MySQLdb.connect(**db_params)
             self._db[db]['cursor'] = self._db[db]['conn'].cursor(MySQLdb.cursors.DictCursor)
+            #self._db[db]['cursor'] = self._db[db]['conn'].cursor()
         except MySQLdb.Error, e:
             raise IOError("Error connecting to database '{0}'!\n{1}".format(db, e))
 
@@ -164,17 +165,16 @@ class Dbi(gwman):
         if not params:
             params = self._ip_params
 
-        assert type(params) == type(dict()), "_fill_ipinfo: 'params' must be a dict type"
+        assert type(params) == type(OrderedDict()), "_fill_ipinfo: 'params' must be a OrderedDict type"
         assert self.ip, "self.ip must be assigned first"
-        assert type(self._ipinfo) == type(dict()), "_fill_ipinfo: 'params' must be a dict type"
+        assert type(self._ipinfo) == type(OrderedDict()), "_fill_ipinfo: 'params' must be a OrderedDict type"
 
         self._ipinfo['ip'] = self.ip
 
         args = dict()
         args['ip'] = self.ip
-        ## К каждому имени поля добавить префикс 'v.'
+        # Имя поля в формате <имя поля> as '<имя поля>' для корректного поиска по ключу при получении описания поля
         args['fields'] = ", ".join(map(lambda field: "{0} as '{0}'".format(field), params.keys()))
-        #args['fields'] = ", ".join(params.keys())
         #print args
         sql = """
                 select
@@ -197,59 +197,21 @@ class Dbi(gwman):
         cur = self._db[self._dbi]['cursor']
         cur.execute(sql)
         if cur.rowcount == 0:
-            self._ipinfo = dict()
+            self._ipinfo = OrderedDict()
             return False
         assert cur.rowcount == 1, "'{0}' belongs to many vgroups or MySQLdb.cursor.rowcount < 0!!! O_o... It's impossible!".format(args['ip'])
         
-        # Here cur.rowcount = 1
+        # Здесь cur.rowcount = 1
         ipinfo = cur.fetchone()
 
         # Конвертация цифрового представления поля blocked в текстовое обозначение
-        # TODO: решить проблему с кодировкой
-        #vg['v.blocked'] = self._blocked.get(vg.get('v.blocked'))
-        #if vg.get('blocked'):
-        #    vg['blocked'] = vg['blocked'].decode('utf-8')
+        ipinfo['v.blocked'] = self._blocked.get(ipinfo['v.blocked']) or ipinfo['v.blocked']
+
+        # Чтобы сохранить порядок следования полей как в self._ip_params
+        self._ipinfo = OrderedDict.fromkeys(self._ip_params)
 
         self._ipinfo.update(ipinfo)
         return True
-
-
-    #def _agent_id(self, ip=''):
-    #    """Возвращает id агента, на котором ip-адрес ip.
-    #    если self['ip'] отличается от ip, то запрос в базу
-    #    иначе вернет self['id']""" 
-    #    # Если параметр ip задан и проходит проверку, то _ip = ip,
-    #    # иначе _ip = self.data.get('ip') иначе ip = None
-    #    _ip = ip and self._check_ip(ip) or self.data.get('ip')
-    #    if not _ip:
-    #        raise ValueError("_agent_id(ip): ip or self['ip'] must be set!")
-    #    if _ip == self.data.get('ip'):
-    #        result = self.data.get('v.id')
-    #    else:
-    #        sql = """
-    #            select
-    #                s.id as id
-    #            from
-    #                staff st inner join segments s
-    #                on (st.segment_id = s.record_id)
-    #            where
-    #                st.segment = inet_aton('{0}')
-    #            """.format(_ip)
-
-    #        cur = self._cur_['dbi']
-    #        cur.execute(sql)
-    #        if cur.rowcount == 0:
-    #            return False
-    #        elif cur.rowcount > 1:
-    #            raise RuntimeError("'{0}' belongs to many segments O_o... It's impossible!".format(ip))
-    #        elif cur.rowcount < 0:
-    #            raise RuntimeError("MySQLdb.cursor.rowcount return value < 0... Is it possible?")
-
-    #        # Here cur.rowcount = 1
-    #        row = cur.fetchone()
-    #        result = res['id']
-
-    #    return str(result)
 
 
     def _tables(self, timefrom='19011213', timeto='20380119', agent=None):
@@ -438,7 +400,7 @@ def main():
     else:
         sys.exit("not found")
 
-    stat = dbi._get_stat(params.dfrom, params.dto, 'dfrom')
+    stat = dbi._get_stat(params.dfrom, params.dto, 'day')
     print stat['header']
     for row in stat['body']:
         print row

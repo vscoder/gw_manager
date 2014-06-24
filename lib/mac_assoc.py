@@ -98,12 +98,12 @@ class MacAssoc(gwman):
         if not "." in addr:
             addr = self.mac_conv(addr)
 
-        result = {}
+        result = list()
         arptable = self.arptable
         for ip, mac in arptable.items():
             mac = mac.upper()
             if addr in ip or addr in mac:
-                result[ip] = mac.upper()
+                result.append((ip, mac.upper()))
         return result
 
 
@@ -167,13 +167,13 @@ class MacAssoc(gwman):
     def find_ethers(self, addr):
         """Поиск соответствия в файле self.ethers"""
         addr = addr.upper()
-        result = {}
+        result = list()
         with open(self.ethers, 'r') as f:
             for line in f:
                 line = line.upper()
                 if addr in line:
                     ip, mac = line.split()
-                    result[ip] = mac.upper()
+                    result.append((ip, mac.upper()))
         return result
 
 
@@ -281,10 +281,10 @@ class MacAssoc(gwman):
         """Поиск по части ip/mac адреса"""
         addr = addr.upper()
         arptable = self.list_ipfw()
-        result = {}
+        result = list()
         for ip, mac in arptable.items():
             if addr in ip or addr in mac:
-                result[ip] = mac.upper()
+                result.append((ip, mac.upper()))
 
         return result
             
@@ -336,6 +336,7 @@ class MacAssoc(gwman):
     def ethers_to_arp(self):
         """Запись фаила ethers в системную arp-таблицу"""
         if os.path.isfile(self.ethers):
+            subprocess.call([self.arp, "-da"])
             return subprocess.call([self.arp, "-f", self.ethers])
         else:
             return False
@@ -430,7 +431,7 @@ if __name__ == "__main__":
     # FIND
     if find is not None:
         entries = macs.find(find)
-        for ip, mac in entries.items():
+        for ip, mac in entries:
             #rulenum = macs.rulenum(ip)
             print "in %s found ip: %s\tmac: %s" % (macs.arptype, ip, mac)
 

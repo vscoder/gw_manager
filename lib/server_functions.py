@@ -61,12 +61,13 @@ class GwManServerFunctions(object):
             rows = macs.find(addr)
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
         result['status'] = True
         result['data'] = rows
         return result
+
 
     @as_dict
     def mac_add(self, ip, mac):
@@ -80,16 +81,19 @@ class GwManServerFunctions(object):
             status = macs.set()
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
-        result['data'] = {'arptype': macs.arptype, 'ip': macs.ip, 'mac': macs.mac}
+        result['data'] = (('arptype', macs.arptype),
+                          ('ip', macs.ip),
+                          ('mac', macs.mac),
+                          )
         if status:
             try:
                 macs.ethers_to_arp()
             except Exception as e:
                 result['status'] = False
-                result['data'] = {'error:': e.message}
+                result['data'] = (('error:', e.message), )
                 return result
 
             result['status'] = True
@@ -111,23 +115,27 @@ class GwManServerFunctions(object):
             status = macs.delete()
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
-        result['data'] = {'arptype': macs.arptype, 'ip': macs.ip}
+        result['data'] = (('arptype', macs.arptype),
+                          ('ip', macs.ip),
+                          )
         if status:
             try:
                 macs.ethers_to_arp()
             except Exception as e:
                 result['status'] = False
-                result['data'] = {'error:': e.message}
+                result['data'] = (('error:', e.message), )
                 return result
 
             result['status'] = True
             #"OK: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
         else:
             result['status'] = False
-            result['data'] = {'ip': macs.ip, 'error:': 'not found in %s' % macs.ethers}
+            result['data'] = (('ip', macs.ip),
+                              ('error:', 'not found in {0}'.format(macs.ethers)),
+                              )
             #"ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
 
         return result
@@ -146,7 +154,7 @@ class GwManServerFunctions(object):
                 ipstatus = True
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
         # IPFW
@@ -155,7 +163,7 @@ class GwManServerFunctions(object):
             pipes = ipfw.check_ip()
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
         if pipes:
@@ -166,10 +174,11 @@ class GwManServerFunctions(object):
             shape_out = 'unknown'
 
         result['status'] = True
-        result['data'] = {'ip': ip,
-                          'ipstatus': ipstatus,
-                          'shape_in': shape_in,
-                          'shape_out': shape_out}
+        result['data'] = (('ip', ip),
+                          ('ipstatus', ipstatus),
+                          ('shape_in', shape_in),
+                          ('shape_out', shape_out)
+                          )
 
         return result
 
@@ -183,11 +192,11 @@ class GwManServerFunctions(object):
             dbi = Dbi(ip)
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
         result['status'] = True
-        result['data'] = {dbi.field_descr(k).decode('utf-8'): v for k, v in dbi._ipinfo.items()}
+        result['data'] = [(dbi.field_descr(k).decode('utf-8'), v) for (k, v) in dbi._ipinfo.items()]
 
         return result
     
@@ -203,7 +212,7 @@ class GwManServerFunctions(object):
             print _stat
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
         #TODO: data.tpl должен принимать в качестве параметров список а не словарь
@@ -226,13 +235,13 @@ class GwManServerFunctions(object):
             scanner = Scan(host = host, port = port)
             if scanner.check_tcp_port():
                 result['status'] = True
-                result['data'] = {'port_status': True, }
+                result['data'] = (('port_status', True), )
             else:
                 result['status'] = True
-                result['data'] = {'port_status': False, }
+                result['data'] = (('port_status', False), )
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
         return result
@@ -253,11 +262,12 @@ class GwManServerFunctions(object):
             else:
                 pinged = False
             result['status'] = True
-            result['data'] = {'pinged': pinged,
-                              'out': out.split("\n") }
+            result['data'] = (('pinged', pinged),
+                              ('out', out.split("\n"))
+                              )
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
         return result
@@ -272,10 +282,10 @@ class GwManServerFunctions(object):
             switches = zabbix.switchlist(pattern)
         except Exception as e:
             result['status'] = False
-            result['data'] = {'error:': e.message}
+            result['data'] = (('error:', e.message), )
             return result
 
-        data = dict()
+        data = list()
         for ip, comm in switches:
             sw = Switch(host = ip)
             sw.proto = 'snmp'
@@ -285,7 +295,7 @@ class GwManServerFunctions(object):
 
             port = sw.find_mac(mac)
 
-            data[sw.host] = port
+            data.append((sw.host, port))
 
         result['status'] = True
         result['mac'] = mac

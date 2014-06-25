@@ -4,6 +4,7 @@
 import sys
 import os
 import subprocess
+import ConfigParser
 
 import logging
 logging.basicConfig(level=logging.DEBUG,
@@ -31,6 +32,19 @@ def as_dict(fn):
     return wrapped
 
 
+def readconf(conffile='conf/agent.conf'):
+    """Read config from conffile
+    and store it in self.conf dictionary"""
+    conf = dict()
+    config = ConfigParser.RawConfigParser()
+    config.read(conffile)
+    for section in config.sections():
+        for item, value in config.items(section):
+            conf[section] = {item: value}
+
+    return conf
+
+
 class GwManServerFunctions(object):
     """Каждая функция должна принимать 2 аргумента:
     self и словарь с параметрами.
@@ -53,23 +67,8 @@ class GwManServerFunctions(object):
 
 
     def __init__(self):
-        super(GwManServerFunctions, self).__init__()
-        
-        self._readconf_(self)
+        self.conf = readconf()
         assert type(self.conf) == type(dict()), "GwManServerFunctions.__init__(): Error reading config file"
-
-
-    def _readconf_(self, conffile='conf/agent.conf')
-        """Read config from conffile
-        and store it in self.conf dictionary"""
-        self.conf = dict()
-        config = ConfigParser.RawConfigParser()
-        config.read(conffile)
-        for section in config.sections():
-            for item, value in config.items(section):
-                self.conf[section] = {item: value}
-
-        return self.conf
 
 
     @as_dict

@@ -298,7 +298,7 @@ class GwManServerFunctions(object):
         """find <mac> on switches like <pattern> in <vlan>"""
         result = dict()
         try:
-            zabbix = Zabbix(conf = 'conf/main.conf')
+            zabbix = Zabbix(conf = 'conf/db.conf')
             switches = zabbix.switchlist(pattern)
         except Exception as e:
             result['status'] = False

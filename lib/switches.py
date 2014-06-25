@@ -8,7 +8,7 @@ import MySQLdb.cursors
 
 class Zabbix(object):
     
-    def __init__(self, conf='conf/main.conf'):
+    def __init__(self, conf='conf/db.conf'):
 
         self.conf = conf
 

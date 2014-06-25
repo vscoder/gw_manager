@@ -140,7 +140,9 @@ class GwManServerFunctions(object):
             result['data'] = (('error:', e.message), )
             return result
 
-        result['data'] = (('arptype', macs.arptype), )
+        result['data'] = (('arptype', macs.arptype),
+                          ('ip', macs.ip),
+                          )
 
         if status:
             try:

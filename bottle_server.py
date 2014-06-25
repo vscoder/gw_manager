@@ -55,7 +55,7 @@ def action(action):
     forms = get_forms("%s/conf/forms.conf" % cwd)
 
     rpcserver = request.params.get('rpcserver') or '127.0.0.1'
-    logging.debug("bottle action: rpcserver = '{0}'".format(rpcserver))
+    #logging.debug("bottle action: rpcserver = '{0}'".format(rpcserver))
     conn_str = 'http://{0}:1237'.format(rpcserver)
     params = dict(request.params)
     params = {k: v.strip() for k, v in params.iteritems()}
@@ -110,7 +110,7 @@ def xmlrpcrequest(conn_str, func, params):
     #logging.debug("xmlrpcrequest server:\t%s" % server)
 
     methods = server.system.listMethods()
-    logging.debug("xmlrpcrequest methods:\t%s" % methods)
+    #logging.debug("xmlrpcrequest methods:\t%s" % methods)
     if not func in methods:
         raise ValueError("%s not implemented in server_functions" % func)
 

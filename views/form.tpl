@@ -2,9 +2,9 @@
 {{caption}}<br>
 <table id="form_table">
 
-%if defined('serversfile'):
-%with open(serversfile, 'r') as f:
-%servers = f.readlines()
+%if defined('agentsfile'):
+%with open(agentsfile, 'r') as f:
+%agents = f.readlines()
 %end
 <tr>
 	<td>
@@ -12,8 +12,8 @@
 	</td>
 	<td id=control_col>
 		<select name="rpcserver">
-%for server in servers:
-			<option>{{server}}</option>
+%for agent in agents:
+			<option>{{agent}}</option>
 %end
 		</select>
 	</td>

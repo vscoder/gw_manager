@@ -22,8 +22,8 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
     def __init__(self, request, client_address, server):
-        hostsfile = 'conf/hosts.lst'
-        with open(hostsfile, 'r') as f:
+        serversfile = 'conf/servers.lst'
+        with open(serversfile, 'r') as f:
             hosts = map(lambda a: a.strip(), f.readlines())
 
         if client_address[0] in hosts:

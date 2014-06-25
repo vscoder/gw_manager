@@ -1,0 +1,72 @@
+#!/bin/sh
+
+# cd to program's directory
+ME=$0
+DIR=$(dirname $ME)
+cd $DIR
+
+PY=$(which python2)
+BOTTLE="$DIR/bottle_server.py"
+BOTTLEPID="/tmp/gwman_bottle.pid"
+
+start_bottle () {
+	if [ -f $BOTTLEPID ]; then
+		echo "$BOTTLE already running with PID: $(cat $BOTTLEPID)"
+	else
+		$BOTTLE &
+		PID=$!
+	fi
+	if [ "xxx" == "xxx$PID" ]; then
+		echo "ERROR starting $BOTTLE"
+	else
+		echo $PID > $BOTTLEPID
+		echo "$BOTTLE started sucefully. PID: $PID"
+	fi
+}
+
+stop_bottle () {
+	if [ ! -f $BOTTLEPID ]; then
+		echo "$BOTTLE is not running, PID file not found on path: $BOTTLEPID"
+	else
+		PID=$(cat $BOTTLEPID)
+		kill $PID
+		echo "Killing process $PID..."
+		wait $PID
+		echo "Done"
+		rm -f $BOTTLEPID
+	fi
+}
+
+status_bottle () {
+	if [ ! -f $BOTTLEPID ]; then
+		echo "$BOTTLE is not running, PID file not found on path: $BOTTLEPID"
+		return 1
+	else
+		PID=$(cat $BOTTLEPID)
+		if kill -0 $PID; then
+			echo "$BOTTLEPID already running with PID: $PID"
+			return 0
+		else
+			echo "$BOTTLE is not running, but pidfile exists: $BOTTLEPID"
+			return 1
+		fi
+	fi
+}
+case $1 in
+start	)
+	start_bottle
+;;
+stop	)
+	stop_bottle
+;;
+restart	)
+	stop_bottle
+	start_bottle
+;;
+status	)
+	status_bottle
+;;
+*	)
+	echo "$0 (start|stop|restart)";
+;;
+esac

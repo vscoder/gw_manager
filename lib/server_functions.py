@@ -39,8 +39,9 @@ def readconf(conffile='conf/agent.conf'):
     config = ConfigParser.RawConfigParser()
     config.read(conffile)
     for section in config.sections():
+        conf[section] = dict()
         for item, value in config.items(section):
-            conf[section] = {item: value}
+            conf[section][item] = value
 
     return conf
 
@@ -91,10 +92,12 @@ class GwManServerFunctions(object):
     @as_dict
     def mac_add(self, ip, mac):
         """Add ip-mac association"""
+        result = dict()
+
         macs = MacAssoc(self.conf['mac_assoc']['arptype'])
+
         macs.ip = ip
         macs.mac = mac
-        result = dict()
 
         try:
             status = macs.set()
@@ -137,9 +140,8 @@ class GwManServerFunctions(object):
             result['data'] = (('error:', e.message), )
             return result
 
-        result['data'] = (('arptype', macs.arptype),
-                          ('ip', macs.ip),
-                          )
+        result['data'] = (('arptype', macs.arptype), )
+
         if status:
             try:
                 macs.ethers_to_arp()

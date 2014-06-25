@@ -52,11 +52,31 @@ class GwManServerFunctions(object):
     """
 
 
+    def __init__(self):
+        super(GwManServerFunctions, self).__init__()
+        
+        self._readconf_(self)
+        assert type(self.conf) == type(dict()), "GwManServerFunctions.__init__(): Error reading config file"
+
+
+    def _readconf_(self, conffile='conf/agent.conf')
+        """Read config from conffile
+        and store it in self.conf dictionary"""
+        self.conf = dict()
+        config = ConfigParser.RawConfigParser()
+        config.read(conffile)
+        for section in config.sections():
+            for item, value in config.items(section):
+                self.conf[section] = {item: value}
+
+        return self.conf
+
+
     @as_dict
     def mac_find(self, addr):
         """Find ip-mac association"""
         result = dict()
-        macs = MacAssoc('arp')
+        macs = MacAssoc(self.conf['mac_assoc']['find_arptype'])
         try:
             rows = macs.find(addr)
         except Exception as e:
@@ -72,7 +92,7 @@ class GwManServerFunctions(object):
     @as_dict
     def mac_add(self, ip, mac):
         """Add ip-mac association"""
-        macs = MacAssoc('ethers')
+        macs = MacAssoc(self.conf['mac_assoc']['arptype'])
         macs.ip = ip
         macs.mac = mac
         result = dict()
@@ -107,7 +127,7 @@ class GwManServerFunctions(object):
     @as_dict
     def mac_del(self, ip):
         """Del ip-mac association"""
-        macs = MacAssoc('ethers')
+        macs = MacAssoc(self.conf['mac_assoc']['arptype'])
         macs.ip = ip
         result = dict()
 

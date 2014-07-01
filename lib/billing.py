@@ -272,6 +272,7 @@ class Dbi(gwman):
         assert type(det) == type(str()), "_detalisation: det must be string type"
         if det == 'day':
             self._stat_fields['dfrom'][0] = 'day(s.timefrom)'
+            self._stat_fields['dfrom'][1] = 'День'
             self._stat_fields['dfrom'][4] = True
             self._stat_fields['lip'][2] = False
             self._stat_fields['lport'][2] = False
@@ -279,6 +280,7 @@ class Dbi(gwman):
             self._stat_fields['rport'][2] = False
         elif det == 'hour':
             self._stat_fields['dfrom'][0] = 'hour(s.timefrom)'
+            self._stat_fields['dfrom'][1] = 'Час'
             self._stat_fields['dfrom'][4] = True
             self._stat_fields['lip'][2] = False
             self._stat_fields['lport'][2] = False
@@ -287,7 +289,7 @@ class Dbi(gwman):
         elif det == 'day_file':
             self._stat_fields['dfrom'][2] = False
             self._stat_fields['tin'][4] = -1
-        elif det == 'day_file':
+        elif det == 'session_file':
             self._stat_fields['dfrom'][0] = 's.timefrom'
             self._stat_fields['dfrom'][4] = 1
         else:
@@ -359,7 +361,8 @@ class Dbi(gwman):
             #print "_stat: sql -- ", sql
             cur.execute(sql)
             for row in cur.fetchall():
-                data.append(row.values())
+                row = map(lambda s: str(s), row.values())
+                data.append(row)
 
         stat = {'header': header,
                 'body': data,

@@ -232,7 +232,7 @@ class GwManServerFunctions(object):
         try:
             dbi = Dbi(ip)
             _stat = dbi._get_stat(dfrom, dto, det)
-            print _stat
+            #print _stat
         except Exception as e:
             result['status'] = False
             result['data'] = (('error:', e.message), )

@@ -32,9 +32,9 @@ stop_server () {
 		echo "$SERVER is not running, PID file not found on path: $SERVERPID"
 	else
 		PID=$(cat $SERVERPID)
-		kill $PID
+		kill -TERM $PID
 		echo "Killing process $PID..."
-		wait $PID
+		while kill -0 $PID; do sleep 1; done
 		echo "Done"
 		rm -f $SERVERPID
 	fi

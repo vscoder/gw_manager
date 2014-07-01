@@ -29,9 +29,9 @@ stop_bottle () {
 		echo "$BOTTLE is not running, PID file not found on path: $BOTTLEPID"
 	else
 		PID=$(cat $BOTTLEPID)
-		kill $PID
+		kill -TERM $PID
 		echo "Killing process $PID..."
-		wait $PID
+		while kill -0 $PID; do sleep 1; done
 		echo "Done"
 		rm -f $BOTTLEPID
 	fi

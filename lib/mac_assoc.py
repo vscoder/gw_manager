@@ -437,7 +437,7 @@ if __name__ == "__main__":
 
     # GET
     if get is not None:
-        result = macs.get(get)
+        result = macs.get(get)[0]
         if result:
             print "in %s found ip: %s\tmac: %s" % (macs.arptype, result[0], result[1])
         else:

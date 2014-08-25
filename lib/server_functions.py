@@ -68,7 +68,7 @@ class GwManServerFunctions(object):
 
 
     def __init__(self):
-        self.conf = readconf()
+        self.conf = readconf('conf/agent.conf')
         assert type(self.conf) == type(dict()), "GwManServerFunctions.__init__(): Error reading config file"
 
 

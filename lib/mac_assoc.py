@@ -115,7 +115,7 @@ class MacAssoc(gwman):
         for ip, mac in self.arptable.items():
             mac = mac.upper()
             if addr == ip or addr == mac:
-                result = (ip, mac)
+                result.append((ip, mac))
         return result
 
     #def set_arp(self, ip, mac):
@@ -186,7 +186,7 @@ class MacAssoc(gwman):
                 line = line.upper()
                 ip, mac = line.split()
                 if addr == ip or addr == mac:
-                    result = (ip, mac)
+                    result.append((ip, mac))
         return result
 
 
@@ -292,10 +292,10 @@ class MacAssoc(gwman):
         """Получить ip/mac по точному совпадению"""
         addr = addr.upper()
         arptable = self.list_ipfw()
-        result = {}
+        result = []
         for ip, mac in arptable.items():
             if addr == ip or addr == mac:
-                result = (ip, mac.upper())
+                result.append((ip, mac.upper()))
 
         return result
 

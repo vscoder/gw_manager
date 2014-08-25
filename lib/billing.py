@@ -30,7 +30,9 @@ class Dbi(gwman):
         'идентификатор поля': ('поле в mysql', 'описание поля', включить_в_выборку?, группировать?, сортировать?),
         """
         self._stat_fields = OrderedDict([
-            ('dfrom', ["s.timefrom", "время начала сессии", True, True, 0]),
+            ('dfrom', ["s.timefrom", "время начала сессии", True, True, 1]),
+            ('dday', ["day(s.timefrom)", "День", False, False, 0]),
+            ('dhour', ["hour(s.timefrom)", "Час", False, False, 0]),
             ('dto', ["s.timeto", "время окончания сессии", False, False, 0]),
             ('lip', ["inet_ntoa(s.ip)", "локальный ip", True, True, 0]),
             ('lport', ["s.ipport", "локальный порт", True, True, 0]),
@@ -271,17 +273,21 @@ class Dbi(gwman):
         # Пример 'dfrom': ["s.timefrom", "время начала сессии", <Отображать>, <Группировать>, <Сортировать>],
         assert type(det) == type(str()), "_detalisation: det must be string type"
         if det == 'day':
-            self._stat_fields['dfrom'][0] = 'day(s.timefrom)'
-            self._stat_fields['dfrom'][1] = 'День'
-            self._stat_fields['dfrom'][4] = True
+            self._stat_fields['dfrom'][0] = 'date(s.timefrom)'
+            self._stat_fields['dfrom'][1] = 'Дата'
+            self._stat_fields['dfrom'][3] = False
+            self._stat_fields['dday'][2] = True
+            self._stat_fields['dday'][3] = True
             self._stat_fields['lip'][2] = False
             self._stat_fields['lport'][2] = False
             self._stat_fields['rip'][2] = False
             self._stat_fields['rport'][2] = False
         elif det == 'hour':
-            self._stat_fields['dfrom'][0] = 'hour(s.timefrom)'
-            self._stat_fields['dfrom'][1] = 'Час'
-            self._stat_fields['dfrom'][4] = True
+            #self._stat_fields['dfrom'][0] = 'hour(s.timefrom)'
+            #self._stat_fields['dfrom'][1] = 'Час'
+            self._stat_fields['dfrom'][3] = False
+            self._stat_fields['dhour'][2] = True
+            self._stat_fields['dhour'][3] = True
             self._stat_fields['lip'][2] = False
             self._stat_fields['lport'][2] = False
             self._stat_fields['rip'][2] = False
@@ -389,6 +395,9 @@ def main():
     parser.add_argument('-t', '--dto', 
         metavar = 'YYYYMMDD',
         help = 'Конечная дата статистики (исключая)')
+    parser.add_argument('-d', '--det', 
+        metavar = 'DET',
+        help = 'Уровень детализации')
     params = parser.parse_args()
 
     # Инициализация
@@ -403,7 +412,7 @@ def main():
     else:
         sys.exit("not found")
 
-    stat = dbi._get_stat(params.dfrom, params.dto, 'day')
+    stat = dbi._get_stat(params.dfrom, params.dto, params.det)
     print stat['header']
     for row in stat['body']:
         print row

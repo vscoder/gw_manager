@@ -78,7 +78,7 @@ class GwManServerFunctions(object):
         result = dict()
         macs = MacAssoc(self.conf['mac_assoc']['find_arptype'])
         try:
-            rows = macs.find(addr)
+            rows = macs.get(addr)
         except Exception as e:
             result['status'] = False
             result['data'] = (('error:', e.message), )

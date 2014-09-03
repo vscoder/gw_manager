@@ -310,10 +310,10 @@ class GwManServerFunctions(object):
 
         data = list()
         for ip, comm in switches:
-            sw = Switch(host = ip)
+            sw = Switch(host = ip, getmodel = True)
             sw.proto = 'snmp'
             sw.vlan = vlan
-            sw.model = 'A3100'
+            #sw.model = 'A3100'
             sw.community = comm
 
             port = sw.find_mac(mac)

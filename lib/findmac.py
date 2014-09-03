@@ -9,7 +9,7 @@ from gwman import gwman
 
 class Switch(gwman):
     
-    _models = ['A3100', 'OTHER', ]
+    _models = ['A3100', '3Com SuperStack 3', 'AT-8000S', 'OTHER', ]
 
     def __init__(self, host='127.0.0.1', port=161, community='public', vlan=1, getmodel=False):
         gwman.__init__(self)
@@ -82,6 +82,8 @@ class Switch(gwman):
             if not self._vlan:
                 raise RuntimeError("Switch.vlan must be set for model 'A3100'")
             self.mactable_oid = '.1.3.6.1.2.1.17.7.1.2.2.1.2.%s' % self.vlan
+        elif model in ['3Com SuperStack 3', 'AT-8000S']:
+            self.mactable_oid = '.1.3.6.1.2.1.17.4.3.1.2'
         elif model == 'OTHER':
             self.mactable_oid = '.1.3.6.1.2.1.17.4.3.1.2'
         else:

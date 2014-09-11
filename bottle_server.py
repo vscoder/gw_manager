@@ -109,10 +109,10 @@ def xmlrpcrequest(conn_str, func, params):
     server = xmlrpclib.ServerProxy(conn_str)
     #logging.debug("xmlrpcrequest server:\t%s" % server)
 
-    methods = server.system.listMethods()
+    #methods = server.system.listMethods()
     #logging.debug("xmlrpcrequest methods:\t%s" % methods)
-    if not func in methods:
-        raise ValueError("%s not implemented in server_functions" % func)
+    #if not func in methods:
+    #    raise ValueError("%s not implemented in server_functions" % func)
 
     method = getattr(server, func)
     #logging.debug("xmlrpcrequest:\ttype of 'method' is %s" % type(method))

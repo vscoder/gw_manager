@@ -22,14 +22,16 @@ from switches import Zabbix
 from findmac import Switch
 from billing import Dbi
 
-
-def as_dict(fn):
-    """get function params from dict"""
-    def wrapped(self, params):
-        logging.debug("func: '%s', params: %s" % (fn.__name__, params))
-        return fn(self, **params)
-    
-    return wrapped
+# Заеомментировано за ненадобностью,
+# вместо декоратора @as_dict используется метод _dispatch
+# см. документацию https://docs.python.org/2/library/simplexmlrpcserver.html#simplexmlrpcserver-objects
+#def as_dict(fn):
+#    """get function params from dict"""
+#    def wrapped(self, params):
+#        logging.debug("func: '%s', params: %s" % (fn.__name__, params))
+#        return fn(self, **params)
+#    
+#    return wrapped
 
 
 def readconf(conffile='conf/agent.conf'):
@@ -49,8 +51,6 @@ def readconf(conffile='conf/agent.conf'):
 class GwManServerFunctions(object):
     """Каждая функция должна принимать 2 аргумента:
     self и словарь с параметрами.
-    Можно использовать декоратор @as_dict
-    для достижения такого поведения.
     
     Каждая функция должна возвращать словарь
     со следующими атрибутами:
@@ -66,13 +66,37 @@ class GwManServerFunctions(object):
             значение -- описание
     """
 
+    def _dispatch(self, method, params):
+        """Rules of dispatching functions to xmlrpc server
+        см. документацию https://docs.python.org/2/library/simplexmlrpcserver.html#simplexmlrpcserver-objects
+        """
+        functions = self.conf['main']['functions']
+        func_list = functions.split(",")
+        func_list = map(lambda f: f.strip(), func_list)
+
+        if func_list[0] == '*' or method in func_list:
+            func = getattr(self, method)
+            params_dict = params[0]
+            return func(**params_dict)
+        else:
+            func = getattr(self, "func_locked")
+            return func(method)
+
 
     def __init__(self):
         self.conf = readconf('conf/agent.conf')
         assert type(self.conf) == type(dict()), "GwManServerFunctions.__init__(): Error reading config file"
 
 
-    @as_dict
+    def func_locked(self, method):
+        """Called if function not found or locked"""
+        result = dict()
+
+        result['status'] = False
+        result['data'] = (('error:', "Method '{}' not found on this agent".format(method)), )
+        return result
+
+
     def mac_find(self, addr):
         """Find ip-mac association"""
         result = dict()
@@ -89,7 +113,6 @@ class GwManServerFunctions(object):
         return result
 
 
-    @as_dict
     def mac_add(self, ip, mac):
         """Add ip-mac association"""
         result = dict()
@@ -126,7 +149,6 @@ class GwManServerFunctions(object):
 
         return result
 
-    @as_dict
     def mac_del(self, ip):
         """Del ip-mac association"""
         macs = MacAssoc(self.conf['mac_assoc']['arptype'])
@@ -164,7 +186,6 @@ class GwManServerFunctions(object):
         return result
 
     
-    @as_dict
     def check_ip(self, ip):
         """Check block status and shape of ip address"""
         result = dict()
@@ -206,7 +227,6 @@ class GwManServerFunctions(object):
         return result
 
 
-    @as_dict
     def ip_info(self, ip):
         """Get info about ip from billing"""
         result = dict()
@@ -224,7 +244,6 @@ class GwManServerFunctions(object):
         return result
     
     
-    @as_dict
     def ip_stat(self, ip, dfrom, dto, det):
         """Get info about ip from billing"""
         result = dict()
@@ -250,7 +269,6 @@ class GwManServerFunctions(object):
         return result
 
     
-    @as_dict
     def scan_tcp(self, host, port):
         """scan tcp port"""
         result = dict()
@@ -270,7 +288,6 @@ class GwManServerFunctions(object):
         return result
 
 
-    @as_dict
     def ping(self, host, count=3):
         """ping <host> <count> times"""
         result = dict()
@@ -296,7 +313,6 @@ class GwManServerFunctions(object):
         return result
 
 
-    @as_dict
     def findmac_on_switches(self, pattern, mac, vlan):
         """find <mac> on switches like <pattern> in <vlan>"""
         result = dict()

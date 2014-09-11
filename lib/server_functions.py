@@ -13,14 +13,6 @@ logging.basicConfig(level=logging.DEBUG,
                     )
 
 #sys.path.insert(0, "./lib")
-from scan import Scan
-from firewall import Pf
-from firewall import Ipfw
-from mac_assoc import MacAssoc
-from ping import Ping
-from switches import Zabbix
-from findmac import Switch
-from billing import Dbi
 
 # Заеомментировано за ненадобностью,
 # вместо декоратора @as_dict используется метод _dispatch
@@ -99,6 +91,7 @@ class GwManServerFunctions(object):
 
     def mac_find(self, addr):
         """Find ip-mac association"""
+        from mac_assoc import MacAssoc
         result = dict()
         macs = MacAssoc(self.conf['mac_assoc']['find_arptype'])
         try:
@@ -115,6 +108,7 @@ class GwManServerFunctions(object):
 
     def mac_add(self, ip, mac):
         """Add ip-mac association"""
+        from mac_assoc import MacAssoc
         result = dict()
 
         macs = MacAssoc(self.conf['mac_assoc']['arptype'])
@@ -151,6 +145,7 @@ class GwManServerFunctions(object):
 
     def mac_del(self, ip):
         """Del ip-mac association"""
+        from mac_assoc import MacAssoc
         macs = MacAssoc(self.conf['mac_assoc']['arptype'])
         macs.ip = ip
         result = dict()
@@ -188,6 +183,8 @@ class GwManServerFunctions(object):
     
     def check_ip(self, ip):
         """Check block status and shape of ip address"""
+        from firewall import Pf
+        from firewall import Ipfw
         result = dict()
 
         # PF
@@ -229,6 +226,7 @@ class GwManServerFunctions(object):
 
     def ip_info(self, ip):
         """Get info about ip from billing"""
+        from billing import Dbi
         result = dict()
 
         try:
@@ -246,6 +244,7 @@ class GwManServerFunctions(object):
     
     def ip_stat(self, ip, dfrom, dto, det):
         """Get info about ip from billing"""
+        from billing import Dbi
         result = dict()
 
         try:
@@ -271,6 +270,7 @@ class GwManServerFunctions(object):
     
     def scan_tcp(self, host, port):
         """scan tcp port"""
+        from scan import Scan
         result = dict()
         try:
             scanner = Scan(host = host, port = port)
@@ -290,6 +290,7 @@ class GwManServerFunctions(object):
 
     def ping(self, host, count=3):
         """ping <host> <count> times"""
+        from ping import Ping
         result = dict()
         # Инициализация класса
         try:
@@ -315,6 +316,8 @@ class GwManServerFunctions(object):
 
     def findmac_on_switches(self, pattern, mac, vlan):
         """find <mac> on switches like <pattern> in <vlan>"""
+        from switches import Zabbix
+        from findmac import Switch
         result = dict()
         try:
             zabbix = Zabbix(conf = 'conf/db.conf')

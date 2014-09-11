@@ -35,12 +35,15 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 
 
 def main():
+    #conffile = 'conf/server.conf'
+    #config = ConfigParser.RawConfigParser()
+    #config.read(conffile)
     HOST, PORT = "0.0.0.0", 1237
 
     server = SimpleXMLRPCServer((HOST, PORT),
                                 requestHandler=RequestHandler)
     server.register_introspection_functions()
-
+    
     server.register_instance(GwManServerFunctions())
 
     # Activate the server; this will keep running until you

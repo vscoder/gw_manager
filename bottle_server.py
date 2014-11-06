@@ -134,7 +134,8 @@ class Server():
 
     def run(self):
         os.chdir(cwd)
-        gwman.run(host='0.0.0.0', port=8000, server='cherrypy', debug=True)
+        #gwman.run(host='0.0.0.0', port=8000, server='cherrypy', debug=True)
+        gwman.run(host='0.0.0.0', port=8000, debug=True)
 
 
 if __name__ == "__main__":

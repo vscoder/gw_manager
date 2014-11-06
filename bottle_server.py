@@ -5,12 +5,13 @@ import os
 import sys
 
 # Установка текущей рабочей директории
+cwd = "{}".format(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-cwd = os.getcwd()
+os.chdir(cwd)
 
 import ConfigParser
 import xmlrpclib
+from daemon import runner
 
 from ast import literal_eval
 
@@ -121,7 +122,28 @@ def xmlrpcrequest(conn_str, func, params):
     logging.debug("xmlrpcrequest result:\t{0}".format(result))
     return result
 
+# Class to wrap around the XML-RPC server
+class Server():
+
+    def __init__(self):
+        self.stdin_path = '/dev/null'
+        self.stdout_path = 'log/server.log'
+        self.stderr_path = 'log/server.log'
+        self.pidfile_path = '/tmp/gwman_server.pid'
+        self.pidfile_timeout = 5
+
+    def run(self):
+        os.chdir(cwd)
+        gwman.run(host='0.0.0.0', port=8000, server='cherrypy', debug=True)
+
 
 if __name__ == "__main__":
-    #run(host='localhost', port=8001, server='cherrypy', debug=True)
-    gwman.run(host='0.0.0.0', port=8000, debug=True, reloader=True)
+
+    daemon = runner.DaemonRunner(Server())
+    
+    # Set the owning UID and GID the daemon
+    #daemon.daemon_context.uid = 1001
+    #daemon.daemon_context.gid = 1001
+
+    # perfom the action - start, stop, restart
+    daemon.do_action()

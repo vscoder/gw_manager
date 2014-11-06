@@ -7,20 +7,20 @@ cd $DIR
 
 PY=$(which python2)
 BOTTLE="$DIR/bottle_server.py"
-BOTTLEPID="/tmp/gwman_bottle.pid"
+BOTTLEPID="/tmp/gwman_server.pid"
 
 start_bottle () {
 	if [ -f $BOTTLEPID ]; then
 		echo "$BOTTLE already running with PID: $(cat $BOTTLEPID)"
+		RES=0
 	else
-		$BOTTLE &
-		PID=$!
+		$BOTTLE start
+		RES=$?
 	fi
-	if [ "xxx" == "xxx$PID" ]; then
-		echo "ERROR starting $BOTTLE"
+	if [ "xxx0" == "xxx$RES" ]; then
+		echo "$BOTTLE started sucefully"
 	else
-		echo $PID > $BOTTLEPID
-		echo "$BOTTLE started sucefully. PID: $PID"
+		echo "ERROR starting $BOTTLE"
 	fi
 }
 
@@ -28,12 +28,13 @@ stop_bottle () {
 	if [ ! -f $BOTTLEPID ]; then
 		echo "$BOTTLE is not running, PID file not found on path: $BOTTLEPID"
 	else
-		PID=$(cat $BOTTLEPID)
-		kill -TERM $PID
-		echo "Killing process $PID..."
-		while kill -0 $PID; do sleep 1; done
-		echo "Done"
-		rm -f $BOTTLEPID
+        $BOTTLE stop
+        RES=$?
+        if [ "xxx0" == "xxx$RES" ]; then
+            echo "$BOTTLE stopped sucefully"
+        else
+            echo "ERROR stopping $BOTTLE"
+        fi
 	fi
 }
 

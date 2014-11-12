@@ -1,0 +1,7 @@
+[main]
+# Comma-separated list of active functions. See lib/server_functions.py
+functions = mac_find,mac_add,mac_del,check_ip,ip_info,ip_stat,scan_tcp,ping,findmac_on_switches
+[mac_assoc]
+# See lib/mac_assoc.py _arptypes = ['ethers', 'ipfw', 'arp']
+arptype = ethers
+find_arptype = arp

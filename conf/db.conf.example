@@ -1,0 +1,18 @@
+[zabbix]
+host = zabbix.example.com
+user = zabbixuser
+passwd = zabbixpass
+db = zabbix
+charset = utf8
+[dbi]
+host = dbi.example.com
+user = lanbilling
+passwd = lanbilling
+db = lanbilling
+charset = utf8
+[billstat]
+host = lanbillstat.example.com
+user = lanbilling
+passwd = lanbilling
+db = lanbillstat
+charset = utf8

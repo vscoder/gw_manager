@@ -1,5 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/local/bin/python2.7
 # -*- coding: utf_8 -*-
+
+##!/usr/bin/env python2
 
 import os
 import sys
@@ -129,7 +131,7 @@ class Server():
         self.stdin_path = '/dev/null'
         self.stdout_path = 'log/server.log'
         self.stderr_path = 'log/server.log'
-        self.pidfile_path = '/tmp/gwman_server.pid'
+        self.pidfile_path = '/var/run/gwman_server.8000.pid'
         self.pidfile_timeout = 5
 
     def run(self):

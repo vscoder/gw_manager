@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# PROVIDE: gwman_server
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+#
+# Add the following lines to /etc/rc.conf.local or /etc/rc.conf
+# to enable this service:
+#
+# gwman_server_enable  (bool):  Set to NO by default.
+#               Set it to YES to enable gwman_server.
+#
+
+. /etc/rc.subr
+
+name="gwman_server"
+rcvar=${name}_enable
+command=/root/gw_manager/bottle_server.py
+
+load_rc_config $name
+
+: ${gwman_server_enable="NO"}
+: ${gwman_server_pidfile="/var/run/gwman_server.8000.pid"}
+
+pidfile="${gwman_server_pidfile}"
+
+start_cmd="${command} start"
+stop_cmd="${command} stop"
+restart_cmd="${command} restart"
+
+run_rc_command $1

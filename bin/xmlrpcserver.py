@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/local/bin/python2.7
+##!/usr/bin/env python2
 # -*- coding: utf_8 -*-
 
 # Command line args: start|stop|restart

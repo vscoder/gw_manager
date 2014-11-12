@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# PROVIDE: gwman_agent
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+#
+# Add the following lines to /etc/rc.conf.local or /etc/rc.conf
+# to enable this service:
+#
+# gwman_agent_enable  (bool):  Set to NO by default.
+#               Set it to YES to enable gwman_agent.
+#
+
+. /etc/rc.subr
+
+name="gwman_agent"
+rcvar=${name}_enable
+command=/root/gw_manager/bin/xmlrpcserver.py
+
+load_rc_config $name
+
+: ${gwman_agent_enable="NO"}
+: ${gwman_agent_pidfile="/var/run/gwman_agent.1237.pid"}
+
+pidfile="${gwman_agent_pidfile}"
+
+start_cmd="${command} start"
+stop_cmd="${command} stop"
+restart_cmd="${command} restart"
+
+run_rc_command $1

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/python
 # -*- coding: utf_8 -*-
 
 ##!/usr/bin/env python2
@@ -7,8 +7,8 @@ import os
 import sys
 
 # Установка текущей рабочей директории
-cwd = "{}".format(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+cwd = "{}/..".format(os.path.dirname(os.path.realpath(__file__)))
+#sys.path.append(os.path.dirname(os.path.abspath(cwd)))
 os.chdir(cwd)
 
 import ConfigParser
@@ -20,7 +20,7 @@ from ast import literal_eval
 from collections import OrderedDict
 
 import logging
-logging.basicConfig(filename='log/bottle.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='log/server.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 from bottle import route
 from bottle import request
@@ -48,14 +48,14 @@ def whoami():
 @gwman.route('/')
 def index():
     logging.info("bottle index: %s?%s" % (request.path, request.query_string))
-    forms = get_forms("%s/conf/forms.conf" % cwd)
+    forms = get_forms("%s/etc/forms.conf" % cwd)
     return template('index.tpl', forms=forms)
 
 
 @gwman.route('/action/<action>')
 def action(action):
     logging.info("bottle action: %s?%s" % (request.path, request.query_string))
-    forms = get_forms("%s/conf/forms.conf" % cwd)
+    forms = get_forms("%s/etc/forms.conf" % cwd)
 
     rpcserver = request.params.get('rpcserver') or '127.0.0.1'
     #logging.debug("bottle action: rpcserver = '{0}'".format(rpcserver))
@@ -79,7 +79,7 @@ def static(filepath):
 
 def get_forms(conf_file):
     """Возвращает список словарей form,
-    имеющих структуру, считанную из секций conf/db.conf,
+    имеющих структуру, считанную из секций etc/db.conf,
     начинающихся с form_.
     Каждый параметр секции обрабатывается ast.literal_eval(),
     строковые значения должны быть в кавычках"""

@@ -29,8 +29,8 @@ from server_functions import GwManServerFunctions
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
-    def __init__(self, request, client_address, server):
-        serversfile = 'conf/servers.lst'
+    def __init__(self, request, client_address, server, servers = 'etc/servers.lst'):
+        serversfile = servers
         with open(serversfile, 'r') as f:
             hosts = map(lambda a: a.strip(), f.readlines())
 

@@ -6,10 +6,11 @@
 import os
 import sys
 
-# Установка текущей рабочей директории
-cwd = "{}/..".format(os.path.dirname(os.path.realpath(__file__)))
-#sys.path.append(os.path.dirname(os.path.abspath(cwd)))
-os.chdir(cwd)
+if __name__ == "__main__":
+    # Установка текущей рабочей директории
+    cwd = "{}/..".format(os.path.dirname(os.path.realpath(__file__)))
+    #sys.path.append(os.path.dirname(os.path.abspath(cwd)))
+    os.chdir(cwd)
 
 import ConfigParser
 import xmlrpclib
@@ -127,26 +128,54 @@ def xmlrpcrequest(conn_str, func, params):
 # Class to wrap around the XML-RPC server
 class Server():
 
-    def __init__(self):
+    def __init__(self, conf_file):
+        config = ConfigParser.RawConfigParser()
+        config.read(conf_file)
+
+        #import pdb; pdb.set_trace()
+        print config.items('main')
+
+        self._log_ = config.get('main', 'log')
+        self._pid_ = config.get('main', 'pid')
+        self._ip_ = config.get('main', 'ip')
+        self._port_ = config.get('main', 'port')
+
         self.stdin_path = '/dev/null'
-        self.stdout_path = 'log/server.log'
-        self.stderr_path = 'log/server.log'
-        self.pidfile_path = '/var/run/gwman_server.8000.pid'
+        self.stdout_path = self._log_
+        self.stderr_path = self._log_
+        self.pidfile_path = self._pid_
         self.pidfile_timeout = 5
 
     def run(self):
         os.chdir(cwd)
         #gwman.run(host='0.0.0.0', port=8000, server='cherrypy', debug=True)
-        gwman.run(host='0.0.0.0', port=8000, debug=True)
+        gwman.run(host=self._ip_, port=self._port_, debug=True)
 
 
-if __name__ == "__main__":
+def main():
+    # Обработка аргументов коммандной строки
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="""Управление маршрутизатором web-интерфейс""")
+    parser.add_argument('action',
+        metavar = 'ACTION',
+        help = 'Действие: start|stop|restart')
+    parser.add_argument('-c', '--conf',
+        metavar = 'FILE',
+        type=file,
+        help = 'Фаил конфигурации')
+    params = parser.parse_args()
 
-    daemon = runner.DaemonRunner(Server())
-    
+    if params.action in ('start', 'stop', 'restart'):
+        daemon = runner.DaemonRunner(Server(params.conf.name))
+    else:
+        parser.parse_args(['-h'])
     # Set the owning UID and GID the daemon
     #daemon.daemon_context.uid = 1001
     #daemon.daemon_context.gid = 1001
 
     # perfom the action - start, stop, restart
     daemon.do_action()
+
+if __name__ == "__main__":
+    main()

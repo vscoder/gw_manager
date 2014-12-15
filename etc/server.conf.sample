@@ -1,0 +1,5 @@
+[main]
+ip = 0.0.0.0
+port = 8001
+log = log/server.8001.log
+pid = /var/run/gwman_server.8001.pid

@@ -16,12 +16,11 @@ import ConfigParser
 import xmlrpclib
 from daemon import runner
 
+import logging
+
 from ast import literal_eval
 
 from collections import OrderedDict
-
-import logging
-logging.basicConfig(filename='log/server.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 from bottle import route
 from bottle import request
@@ -111,7 +110,7 @@ def xmlrpcrequest(conn_str, func, params):
     logging.info("xmlrpcrequest call:\t%s" % str((conn_str, func, params)))
 
     server = xmlrpclib.ServerProxy(conn_str)
-    #logging.debug("xmlrpcrequest server:\t%s" % server)
+    logging.debug("xmlrpcrequest server:\t%s" % server)
 
     #methods = server.system.listMethods()
     #logging.debug("xmlrpcrequest methods:\t%s" % methods)
@@ -133,7 +132,6 @@ class Server():
         config.read(conf_file)
 
         #import pdb; pdb.set_trace()
-        print config.items('main')
 
         self._log_ = config.get('main', 'log')
         self._pid_ = config.get('main', 'pid')
@@ -145,11 +143,20 @@ class Server():
         self.stderr_path = self._log_
         self.pidfile_path = self._pid_
         self.pidfile_timeout = 5
+        
 
     def run(self):
         os.chdir(cwd)
+        logging.basicConfig(filename=self._log_,
+                            format='%(asctime)s %(levelname)s %(message)s',
+                            level=logging.DEBUG)
         #gwman.run(host='0.0.0.0', port=8000, server='cherrypy', debug=True)
-        gwman.run(host=self._ip_, port=self._port_, debug=True)
+        try:
+            gwman.run(host=self._ip_, port=self._port_, debug=True)
+        except:
+            logging.info(sys.exc_info())
+            logging.info('Terminating.')
+            sys.exit(1) 
 
 
 def main():
@@ -170,6 +177,7 @@ def main():
         daemon = runner.DaemonRunner(Server(params.conf.name))
     else:
         parser.parse_args(['-h'])
+
     # Set the owning UID and GID the daemon
     #daemon.daemon_context.uid = 1001
     #daemon.daemon_context.gid = 1001

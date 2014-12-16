@@ -10,7 +10,7 @@ import os
 # Set current work directory
 cwd = "{}/..".format(os.path.dirname(os.path.realpath(__file__)))
 os.chdir(cwd)
-sys.path.insert(0, "{}/lib".format(cwd))
+sys.path.insert(0, "{}/gwman".format(cwd))
 
 from daemon import runner
 from SimpleXMLRPCServer import SimpleXMLRPCServer

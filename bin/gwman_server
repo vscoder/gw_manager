@@ -31,7 +31,7 @@ from bottle import Bottle
 
 gwman = Bottle()
 
-#sys.path.insert(0, "%s/lib" % cwd)
+#sys.path.insert(0, "%s/gwman" % cwd)
 #from server_functions import GwManServerFunctions
 
 @gwman.route('/whoami')

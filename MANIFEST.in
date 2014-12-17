@@ -1,0 +1,3 @@
+recursive-include views *.tpl
+recursive-include static/css *.css
+recursive-include static/pict *.png

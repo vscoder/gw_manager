@@ -15,12 +15,13 @@
 
 name="gwman_agent"
 rcvar=${name}_enable
-command=/root/gw_manager/bin/xmlrpcserver.py
+command="/usr/local/bin/gwman_agent"
 
 load_rc_config $name
 
 : ${gwman_agent_enable="NO"}
-: ${gwman_agent_pidfile="/var/run/gwman_agent.1237.pid"}
+: ${gwman_agent_config="/usr/local/etc/gwman/agent.conf"}
+: ${gwman_agent_pidfile="/var/run/gwman_agent.pid"}
 
 pidfile="${gwman_agent_pidfile}"
 

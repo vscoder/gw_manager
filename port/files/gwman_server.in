@@ -15,12 +15,13 @@
 
 name="gwman_server"
 rcvar=${name}_enable
-command=/root/gw_manager/bottle_server.py
+command="/usr/local/bin/gwman_server"
 
 load_rc_config $name
 
 : ${gwman_server_enable="NO"}
-: ${gwman_server_pidfile="/var/run/gwman_server.8000.pid"}
+: ${gwman_server_config="/usr/local/etc/gwman/server.conf"}
+: ${gwman_server_pidfile="/var/run/gwman_server.pid"}
 
 pidfile="${gwman_server_pidfile}"
 

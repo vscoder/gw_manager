@@ -6,12 +6,6 @@
 import os
 import sys
 
-if __name__ == "__main__":
-    # Установка текущей рабочей директории
-    cwd = "{}/../www".format(os.path.dirname(os.path.realpath(__file__)))
-    #sys.path.append(os.path.dirname(os.path.abspath(cwd)))
-    os.chdir(cwd)
-
 import ConfigParser
 import xmlrpclib
 from daemon import runner
@@ -48,14 +42,14 @@ def whoami():
 @gwman.route('/')
 def index():
     logging.info("bottle index: %s?%s" % (request.path, request.query_string))
-    forms = get_forms("%s/conf/forms.conf" % cwd)
+    forms = get_forms("{}/conf/forms.conf".format(os.getcwd()))
     return template('index.tpl', forms=forms)
 
 
 @gwman.route('/action/<action>')
 def action(action):
     logging.info("bottle action: %s?%s" % (request.path, request.query_string))
-    forms = get_forms("%s/conf/forms.conf" % cwd)
+    forms = get_forms("{}/conf/forms.conf".format(os.getcwd()))
 
     rpcserver = request.params.get('rpcserver') or '127.0.0.1'
     #logging.debug("bottle action: rpcserver = '{0}'".format(rpcserver))
@@ -75,7 +69,7 @@ def action(action):
 @gwman.route('/static/<filepath:path>')
 def static(filepath):
     logging.info("%s?%s" % (request.path, request.query_string))
-    return static_file(filepath, root="%s/static" % cwd)
+    return static_file(filepath, root="{}/static".format(os.getcwd()))
 
 def get_forms(conf_file):
     """Возвращает список словарей form,
@@ -133,10 +127,11 @@ class Server():
 
         #import pdb; pdb.set_trace()
 
-        self._log_ = config.get('main', 'log')
         self._pid_ = config.get('main', 'pid')
         self._ip_ = config.get('main', 'ip')
         self._port_ = config.get('main', 'port')
+        self._www_ = config.get('main', 'www')
+        self._log_ = os.path.join(self._www_, 'log', 'gwman_server.{}.log'.format(self._port_))
 
         self.stdin_path = '/dev/null'
         self.stdout_path = self._log_
@@ -146,12 +141,14 @@ class Server():
         
 
     def run(self):
-        os.chdir(cwd)
+        os.chdir(self._www_)
+        print os.getcwd()
         logging.basicConfig(filename=self._log_,
                             format='%(asctime)s %(levelname)s %(message)s',
                             level=logging.DEBUG)
         #gwman.run(host='0.0.0.0', port=8000, server='cherrypy', debug=True)
         try:
+            logging.info("Starting in directory '{}'".format(os.getcwd()))
             gwman.run(host=self._ip_, port=self._port_, debug=True)
         except:
             logging.info(sys.exc_info())
@@ -160,7 +157,15 @@ class Server():
 
 
 def main():
-    # Обработка аргументов коммандной строки
+    #print os.getcwd()
+    # Установка текущей рабочей директории
+    #cwd = "{}/../www".format(os.path.dirname(os.path.realpath(__file__)))
+    #sys.path.append(os.path.dirname(os.path.abspath(cwd)))
+    #cwd = 'www/'
+    #os.chdir(cwd)
+    #print os.getcwd()
+
+   # Обработка аргументов коммандной строки
     import argparse
     parser = argparse.ArgumentParser(
         description="""Управление маршрутизатором web-интерфейс""")

@@ -1,3 +1,4 @@
-recursive-include views *.tpl
-recursive-include static/css *.css
-recursive-include static/pict *.png
+recursive-include etc *.sample
+recursive-include www/views *.tpl
+recursive-include www/static/css *.css
+recursive-include www/static/pict *.png

@@ -8,7 +8,7 @@ import sys
 
 if __name__ == "__main__":
     # Установка текущей рабочей директории
-    cwd = "{}/..".format(os.path.dirname(os.path.realpath(__file__)))
+    cwd = "{}/../www".format(os.path.dirname(os.path.realpath(__file__)))
     #sys.path.append(os.path.dirname(os.path.abspath(cwd)))
     os.chdir(cwd)
 
@@ -48,14 +48,14 @@ def whoami():
 @gwman.route('/')
 def index():
     logging.info("bottle index: %s?%s" % (request.path, request.query_string))
-    forms = get_forms("%s/etc/forms.conf" % cwd)
+    forms = get_forms("%s/conf/forms.conf" % cwd)
     return template('index.tpl', forms=forms)
 
 
 @gwman.route('/action/<action>')
 def action(action):
     logging.info("bottle action: %s?%s" % (request.path, request.query_string))
-    forms = get_forms("%s/etc/forms.conf" % cwd)
+    forms = get_forms("%s/conf/forms.conf" % cwd)
 
     rpcserver = request.params.get('rpcserver') or '127.0.0.1'
     #logging.debug("bottle action: rpcserver = '{0}'".format(rpcserver))

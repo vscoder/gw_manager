@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+from glob import glob
 
 setup(
     name = 'gwman',
@@ -10,6 +11,13 @@ setup(
         'bin/gwman_server',
         'bin/gwman_agent',
     ],
+
+    #data_files = [
+    #    ('etc', glob('etc/*.sample')),
+    #    ('www/views', glob('www/views/*.tpl')),
+    #    ('www/static/css', glob('www/static/css/*.css')),
+    #    ('www/static/pict', glob('www/static/pict/*.png')),
+    #],
 
     install_requires = [
         'bottle > 0',

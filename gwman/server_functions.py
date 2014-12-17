@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.DEBUG,
 #    return wrapped
 
 
-def readconf(conffile='etc/agent.conf'):
+def readconf(conffile='conf/agent.conf'):
     """Read config from conffile
     and store it in self.conf dictionary"""
     conf = dict()
@@ -76,7 +76,7 @@ class GwManServerFunctions(object):
 
 
     def __init__(self):
-        self.conf = readconf('etc/agent.conf')
+        self.conf = readconf('conf/agent.conf')
         assert type(self.conf) == type(dict()), "GwManServerFunctions.__init__(): Error reading config file"
 
 
@@ -320,7 +320,7 @@ class GwManServerFunctions(object):
         from findmac import Switch
         result = dict()
         try:
-            zabbix = Zabbix(conf = 'etc/db.conf')
+            zabbix = Zabbix(conf = 'conf/db.conf')
             switches = zabbix.switchlist(pattern)
         except Exception as e:
             result['status'] = False

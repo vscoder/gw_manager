@@ -1,4 +1,0 @@
-recursive-include etc *.sample
-recursive-include www/views *.tpl
-recursive-include www/static/css *.css
-recursive-include www/static/pict *.png

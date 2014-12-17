@@ -12,12 +12,14 @@ setup(
         'bin/gwman_agent',
     ],
 
-    #data_files = [
-    #    ('etc', glob('etc/*.sample')),
-    #    ('www/views', glob('www/views/*.tpl')),
-    #    ('www/static/css', glob('www/static/css/*.css')),
-    #    ('www/static/pict', glob('www/static/pict/*.png')),
-    #],
+    data_files = [
+        ('etc/gwman', glob('conf/*.sample')),
+        ('www/gwman/conf', glob('www/conf/*.conf')),
+        ('www/gwman/views', glob('www/views/*.tpl')),
+        ('www/gwman/static/css', glob('www/static/css/*.css')),
+        ('www/gwman/static/pict', glob('www/static/pict/*.png')),
+        ('www/gwman/log', glob('www/log/.*')),
+    ],
 
     install_requires = [
         'bottle > 0',

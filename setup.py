@@ -14,7 +14,8 @@ setup(
 
     data_files = [
         ('etc/gwman', glob('conf/*.sample')),
-        ('www/gwman/conf', glob('www/conf/*.conf')),
+        ('www/gwman/conf',  glob('www/conf/*.conf') +
+                            glob('www/conf/*.sample')),
         ('www/gwman/views', glob('www/views/*.tpl')),
         ('www/gwman/static/css', glob('www/static/css/*.css')),
         ('www/gwman/static/pict', glob('www/static/pict/*.png')),

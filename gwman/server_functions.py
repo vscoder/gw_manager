@@ -6,11 +6,11 @@ import os
 import subprocess
 import ConfigParser
 
-import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s: %(message)s',
-                    filename='log/server_functions.log',
-                    )
+#import logging
+#logging.basicConfig(level=logging.DEBUG,
+#                    format='%(asctime)s: %(message)s',
+#                    filename='log/server_functions.log',
+#                    )
 
 #sys.path.insert(0, "./lib")
 

@@ -14,8 +14,9 @@
 . /etc/rc.subr
 
 name="gwman_server"
-rcvar=${name}_enable
+rcvar="${name}_enable"
 command="/usr/local/bin/gwman_server"
+command_interpreter="/usr/local/bin/python2.7"
 
 load_rc_config $name
 
@@ -25,8 +26,8 @@ load_rc_config $name
 
 pidfile="${gwman_server_pidfile}"
 
-start_cmd="${command} start"
-stop_cmd="${command} stop"
-restart_cmd="${command} restart"
+start_cmd="${command} start -c ${gwman_server_config}"
+stop_cmd="${command} stop -c ${gwman_server_config}"
+restart_cmd="${command} restart -c ${gwman_server_config}"
 
 run_rc_command $1

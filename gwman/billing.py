@@ -21,7 +21,7 @@ class Dbi(gwman):
 
     
 
-    def __init__(self, ip, conf='conf/db.conf', dbi_section='dbi', stat_section='billstat'):
+    def __init__(self, ip, conf='db.conf', dbi_section='dbi', stat_section='billstat'):
         super(Dbi, self).__init__()
         
         # Instance properties

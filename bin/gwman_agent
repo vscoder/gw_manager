@@ -1,22 +1,25 @@
 #!/usr/local/bin/python2.7
-##!/usr/bin/env python2
 # -*- coding: utf_8 -*-
 
+##!/usr/bin/env python2
 # Command line args: start|stop|restart
 
 import sys
 import os
 
 # Set current work directory
-cwd = "{}/..".format(os.path.dirname(os.path.realpath(__file__)))
-os.chdir(cwd)
-sys.path.insert(0, "{}".format(cwd))
+#cwd = "{}/..".format(os.path.dirname(os.path.realpath(__file__)))
+#os.chdir(cwd)
+sys.path.insert(0, "{}".format(os.getcwd()))
+
+import ConfigParser
+
+#import logging
 
 from daemon import runner
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
-#import logging
 #logging.basicConfig(level=logging.DEBUG,
 #                    format='%(asctime)s: %(message)s',
 #                    filename='{}/log/xmlrpcserver.log'.format(cwd),
@@ -30,10 +33,16 @@ from gwman.server_functions import GwManServerFunctions
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
-    def __init__(self, request, client_address, server, servers = 'conf/servers.lst'):
-        serversfile = servers
-        with open(serversfile, 'r') as f:
-            hosts = map(lambda a: a.strip(), f.readlines())
+    def __init__(self, request, client_address, server, servers = 'servers.lst'):
+
+        
+        #logging.debug('Handle from {}'.format(client_address[0]))
+
+        try:
+            with open(servers, 'r') as f:
+                hosts = map(lambda a: a.strip(), f.readlines())
+        except:
+            raise IOError("Error reading file '{}' in dir '{}'".format(servers, os.getcwd()))
 
         if client_address[0] in hosts:
             #logging.info("accepted connection from host {0} port {1}".format(*client_address))
@@ -48,28 +57,61 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 # Class to wrap around the XML-RPC server
 class Server():
  
-    def __init__(self):
+    def __init__(self, conf_file):
+        self._config_ = ConfigParser.RawConfigParser()
+        self._config_.read(conf_file)
+
+        self._cwd_ = "{}".format(os.path.dirname(os.path.realpath(conf_file)))
+
+        self._pid_ = self._config_.get('main', 'pid')
+        self._ip_ = self._config_.get('main', 'ip')
+        self._port_ = self._config_.getint('main', 'port')
+        self._log_ = self._config_.get('main', 'log')
+
         self.stdin_path = '/dev/null'
-        self.stdout_path = 'log/agent.log'
-        self.stderr_path = 'log/agent.log'
-        self.pidfile_path = '/tmp/gwman_agent.pid'
+        self.stdout_path = self._log_
+        self.stderr_path = self._log_
+        self.pidfile_path = self._pid_
         self.pidfile_timeout = 5
      
     def run(self):
-        os.chdir(cwd)
-        HOST, PORT = "0.0.0.0", 1237
-        self.server = SimpleXMLRPCServer((HOST, PORT),
-                                        requestHandler=RequestHandler)
+        os.chdir(self._cwd_)
+        
+        #logging.basicConfig(filename="{}.logger".format('/var/log/gwman_agent.log'),
+        #                    format='%(asctime)s %(levelname)s %(message)s',
+        #                    level=logging.DEBUG)
+
+        self.server = SimpleXMLRPCServer((self._ip_, self._port_),
+                                        requestHandler=RequestHandler,
+                                        logRequests=True
+                                        )
         self.server.register_introspection_functions()
          
         # Register functions
-        self.server.register_instance(GwManServerFunctions())
+        self.server.register_instance(GwManServerFunctions(self._config_))
+
+        #logging.info('Starting on {} {}'.format(self._ip_, self._port_))
+
         self.server.serve_forever()
 
-if __name__ == "__main__":
-    
-    
-    daemon = runner.DaemonRunner(Server())
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="""Управление маршрутизатором агент""")
+    parser.add_argument('action',
+        metavar = 'ACTION',
+        help = 'Действие: start|stop|restart')
+    parser.add_argument('-c', '--conf',
+        metavar = 'FILE',
+        type=file,
+        help = 'Фаил конфигурации')
+    params = parser.parse_args()
+
+    if params.action in ('start', 'stop', 'restart'):
+        daemon = runner.DaemonRunner(Server(params.conf.name))
+    else:
+        parser.parse_args(['-h'])
 
     # Set the owning UID and GID the daemon
     #daemon.daemon_context.uid = 1001
@@ -77,3 +119,7 @@ if __name__ == "__main__":
 
     # perfom the action - start, stop, restart
     daemon.do_action()
+
+
+if __name__ == "__main__":
+    main()

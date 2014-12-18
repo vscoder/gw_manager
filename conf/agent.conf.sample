@@ -1,4 +1,12 @@
 [main]
+# bind ip
+ip = 0.0.0.0
+# bind port
+port = 1237
+# pid file location
+pid = /var/run/gwman_agent.1237.pid
+# log file location
+log = /var/log/gwman_agent.log
 # Comma-separated list of active functions. See lib/server_functions.py
 functions = mac_find,mac_add,mac_del,check_ip,ip_info,ip_stat,scan_tcp,ping,findmac_on_switches
 [mac_assoc]

@@ -138,11 +138,10 @@ class Server():
         self.stderr_path = self._log_
         self.pidfile_path = self._pid_
         self.pidfile_timeout = 5
-        
 
     def run(self):
         os.chdir(self._www_)
-        print os.getcwd()
+        #print os.getcwd()
         logging.basicConfig(filename=self._log_,
                             format='%(asctime)s %(levelname)s %(message)s',
                             level=logging.DEBUG)
@@ -157,15 +156,7 @@ class Server():
 
 
 def main():
-    #print os.getcwd()
-    # Установка текущей рабочей директории
-    #cwd = "{}/../www".format(os.path.dirname(os.path.realpath(__file__)))
-    #sys.path.append(os.path.dirname(os.path.abspath(cwd)))
-    #cwd = 'www/'
-    #os.chdir(cwd)
-    #print os.getcwd()
-
-   # Обработка аргументов коммандной строки
+    # Обработка аргументов коммандной строки
     import argparse
     parser = argparse.ArgumentParser(
         description="""Управление маршрутизатором web-интерфейс""")

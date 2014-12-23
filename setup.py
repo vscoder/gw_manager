@@ -5,7 +5,7 @@ from glob import glob
 
 setup(
     name = 'gwman',
-    version = '0.9',
+    version = '0.9.0',
     packages = ['gwman'],
     scripts = [
         'bin/gwman_server',

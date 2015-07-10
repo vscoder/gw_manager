@@ -317,6 +317,32 @@ class GwManServerFunctions(object):
         return result
 
 
+    def traceroute(self, host, hops=8):
+        """traceroute -m <hops> <host>"""
+        from traceroute import Traceroute
+        result = dict()
+        # Инициализация класса
+        try:
+            traceroute = Traceroute(host = host, hops = hops)
+            #traceroute.hops = hops
+
+            (retcode, out) = traceroute.traceroute_host()
+            if retcode == 0:
+                tracerouted = True
+            else:
+                tracerouted = False
+            result['status'] = True
+            result['data'] = (('tracerouted', tracerouted),
+                              ('out', out.split("\n"))
+                              )
+        except Exception as e:
+            result['status'] = False
+            result['data'] = (('error:', e.message), )
+            return result
+
+        return result
+
+
     def findmac_on_switches(self, pattern, mac, vlan):
         """find <mac> on switches like <pattern> in <vlan>"""
         from switches import Zabbix

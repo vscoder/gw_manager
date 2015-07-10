@@ -324,7 +324,7 @@ class GwManServerFunctions(object):
         # Инициализация класса
         try:
             traceroute = Traceroute(host = host, hops = hops)
-            #traceroute.hops = hops
+            traceroute.hops = hops or 8
 
             (retcode, out) = traceroute.traceroute_host()
             if retcode == 0:

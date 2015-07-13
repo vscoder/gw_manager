@@ -41,7 +41,6 @@ class Traceroute(gwman):
             raise RuntimeError("host must be set")
         
         cmd = [self.traceroute, '-m', self.hops, self.host]
-        print cmd
         PIPE = subprocess.PIPE
         traceroute = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         output = traceroute.stdout.read()

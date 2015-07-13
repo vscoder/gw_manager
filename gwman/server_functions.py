@@ -342,6 +342,30 @@ class GwManServerFunctions(object):
 
         return result
 
+    def ipstatuses(self):
+        """run script /root/billing/scripts/ips_status.sh"""
+        from ipstatuses import Ipstatuses
+        result = dict()
+        # Инициализация класса
+        try:
+            ipstatuses = Ipstatuses()
+
+            (retcode, out) = ipstatuses.set_statuses()
+            if retcode == 0:
+                allok = True
+            else:
+                allok = False
+            result['status'] = True
+            result['data'] = (('tracerouted', allok),
+                              ('out', out.split("\n"))
+                              )
+        except Exception as e:
+            result['status'] = False
+            result['data'] = (('error:', e.message), )
+            return result
+
+        return result
+
 
     def findmac_on_switches(self, pattern, mac, vlan):
         """find <mac> on switches like <pattern> in <vlan>"""

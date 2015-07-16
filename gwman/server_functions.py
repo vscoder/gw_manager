@@ -61,11 +61,26 @@ class GwManServerFunctions(object):
             значение -- описание
     """
 
-    def _listMethods(self):
+    def methods(self):
         """
         Возвращает список доступных методов
         """
-        return list_public_methods(self) + ['string.' + method for method in list_public_methods(self.string)]
+        result = dict()
+        result['status'] = True
+        result['data'] = (
+            ('mac_find', ('addr', )),
+            ('mac_add', ('ip', 'mac', )),
+            ('mac_del', ('ip', )),
+            ('check_ip', ('ip', )),
+            ('ip_info', ('ip', )),
+            ('ip_stat', ('ip', 'dfrom', 'dto', 'det', )),
+            ('scan_tcp', ('host', 'port', )),
+            ('ping', ('host', 'count', )),
+            ('traceroute', ('host', 'hops', )),
+            ('ipstatuses', ()),
+            ('findmac_on_switches', ('pattern', 'mac', 'vlan' )),
+        )
+        return result
 
     def _dispatch(self, method, params):
         """Rules of dispatching functions to xmlrpc server
@@ -77,7 +92,9 @@ class GwManServerFunctions(object):
 
         if func_list[0] == '*' or method in func_list:
             func = getattr(self, method)
-            params_dict = params[0]
+            params_dict = dict()
+            if len(params) > 0:
+                params_dict = params[0]
             return func(**params_dict)
         else:
             func = getattr(self, "func_locked")

@@ -61,6 +61,12 @@ class GwManServerFunctions(object):
             значение -- описание
     """
 
+    def _listMethods(self):
+        """
+        Возвращает список доступных методов
+        """
+        return list_public_methods(self) + ['string.' + method for method in list_public_methods(self.string)]
+
     def _dispatch(self, method, params):
         """Rules of dispatching functions to xmlrpc server
         см. документацию https://docs.python.org/2/library/simplexmlrpcserver.html#simplexmlrpcserver-objects

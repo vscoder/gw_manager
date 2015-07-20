@@ -334,13 +334,19 @@ class GwManServerFunctions(object):
             ping.count = count
 
             (retcode, out) = ping.ping_host()
+            cmd_result = out.split("\n")
             if retcode == 0:
                 pinged = True
             else:
                 pinged = False
+
+            out = list()
+            for s in cmd_result:
+                out.append((s, ))
+
             result['status'] = True
             result['result'] = pinged
-            result['data'] = (out.split("\n"))
+            result['data'] = out
         except Exception as e:
             result['status'] = False
             result['data'] = (('error:', e.message), )
@@ -359,13 +365,20 @@ class GwManServerFunctions(object):
             traceroute.hops = hops or 8
 
             (retcode, out) = traceroute.traceroute_host()
+            cmd_result = out.split("\n")
+
             if retcode == 0:
                 tracerouted = True
             else:
                 tracerouted = False
+
+            out = list()
+            for s in cmd_result:
+                out.append((s, ))
+
             result['status'] = True
             result['result'] = tracerouted
-            result['data'] = ( out.split("\n") )
+            result['data'] = out
         except Exception as e:
             result['status'] = False
             result['data'] = (('error:', e.message), )

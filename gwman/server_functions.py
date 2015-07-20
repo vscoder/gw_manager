@@ -5,6 +5,10 @@ import sys
 import os
 import subprocess
 import ConfigParser
+import re
+
+from netifaces import AF_INET, AF_INET6, AF_LINK, AF_PACKET, AF_BRIDGE
+import netifaces as ni
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG,
@@ -84,6 +88,28 @@ class GwManServerFunctions(object):
             ('findmac_on_switches', ('pattern', 'mac', 'vlan' )),
         )
         return result
+
+
+    def networks(self):
+        """
+        Возвращает список свойств интерфейсов ifcli* и ifnat*
+        пример:
+        [{'addr': '172.16.66.1',
+          'broadcast': '172.16.66.255',
+          'netmask': '255.255.255.0'},
+          ...
+        ]
+        """
+        networks = list()
+        interfaces = ni.interfaces()
+        interfaces = list(filter(lambda ifname: re.match('^(ifcli\d+|ifnat\d+)$', ifname), interfaces))
+        for ifname in interfaces:
+            iface = ni.ifaddresses(ifname)[AF_INET]
+            for ipinfo in iface:
+                networks.append(ipinfo)
+
+        return networks
+
 
     def _dispatch(self, method, params):
         """Rules of dispatching functions to xmlrpc server

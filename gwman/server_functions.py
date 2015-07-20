@@ -248,7 +248,7 @@ class GwManServerFunctions(object):
         result['status'] = True
         result['result'] = ipstatus
         result['data'] = (('ip', ip),
-                          ('ipstatus', ipstatus),
+                          ('active', ipstatus),
                           ('shape_in', shape_in),
                           ('shape_out', shape_out)
                           )

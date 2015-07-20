@@ -206,10 +206,11 @@ class Dbi(gwman):
         # Здесь cur.rowcount = 1
         ipinfo = cur.fetchone()
 
+        # Флаг указывает, активна ли учетная запись, которой принадлежит ip-адрес
+        self.active = False if ipinfo['v.blocked'] > 0 else True
+
         # Конвертация цифрового представления поля blocked в текстовое обозначение
         ipinfo['v.blocked'] = self._blocked.get(ipinfo['v.blocked']) or ipinfo['v.blocked']
-
-        self.active = False if ipinfo['v.blocked'] > 0 else True
 
         # Чтобы сохранить порядок следования полей как в self._ip_params
         self._ipinfo = OrderedDict.fromkeys(self._ip_params)

@@ -90,7 +90,7 @@ class GwManServerFunctions(object):
         return result
 
 
-    def networks(self):
+    def iface_info(self):
         """
         Возвращает список свойств интерфейсов ifcli* и ifnat*
         пример:

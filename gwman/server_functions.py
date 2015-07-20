@@ -53,6 +53,9 @@ class GwManServerFunctions(object):
         True если во время выполнения функции
             не возникло исключений
         False в случае если они возникли
+    result: True/False
+        Результат выполнения операции.
+        Заполняется только при status = True
     data:
         Если status False, то словарь
             с элементом 'error' -- описанием ошибки
@@ -128,6 +131,7 @@ class GwManServerFunctions(object):
             return result
 
         result['status'] = True
+        result['result'] = True if len(rows) > 0 else False
         result['data'] = rows
         return result
 
@@ -161,12 +165,12 @@ class GwManServerFunctions(object):
                 result['data'] = (('error:', e.message), )
                 return result
 
-            result['status'] = True
-            #"OK: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
+            result['result'] = True
         else:
-            result['status'] = False
+            result['result'] = False
             #"ERROR: set association from '%s' for ip: '%s', mac: '%s'" % (macs.arptype, macs.ip, macs.mac)
 
+        result['status'] = True
         return result
 
     def mac_del(self, ip):
@@ -195,15 +199,16 @@ class GwManServerFunctions(object):
                 result['data'] = (('error:', e.message), )
                 return result
 
-            result['status'] = True
+            result['result'] = True
             #"OK: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
         else:
-            result['status'] = False
+            result['result'] = False
             result['data'] = (('ip', macs.ip),
                               ('error:', 'not found in {0}'.format(macs.ethers)),
                               )
             #"ERROR: del association from '%s' for ip: '%s'" % (macs.arptype, macs.ip)
 
+        result['status'] = True
         return result
 
     
@@ -241,6 +246,7 @@ class GwManServerFunctions(object):
             shape_out = 'unknown'
 
         result['status'] = True
+        result['result'] = ipstatus
         result['data'] = (('ip', ip),
                           ('ipstatus', ipstatus),
                           ('shape_in', shape_in),
@@ -263,6 +269,7 @@ class GwManServerFunctions(object):
             return result
 
         result['status'] = True
+        result['result'] = dbi.active
         result['data'] = [(dbi.field_descr(k).decode('utf-8'), v) for (k, v) in dbi._ipinfo.items()]
 
         return result
@@ -289,6 +296,7 @@ class GwManServerFunctions(object):
         stat.extend(_stat['body'])
 
         result['status'] = True
+        result['result'] = True if len(stat) > 0 else False
         result['data'] = stat
 
         return result
@@ -302,9 +310,11 @@ class GwManServerFunctions(object):
             scanner = Scan(host = host, port = port)
             if scanner.check_tcp_port():
                 result['status'] = True
+                result['result'] = True
                 result['data'] = (('port_status', True), )
             else:
                 result['status'] = True
+                result['result'] = False
                 result['data'] = (('port_status', False), )
         except Exception as e:
             result['status'] = False
@@ -329,9 +339,8 @@ class GwManServerFunctions(object):
             else:
                 pinged = False
             result['status'] = True
-            result['data'] = (('pinged', pinged),
-                              ('out', out.split("\n"))
-                              )
+            result['result'] = pinged
+            result['data'] = (out.split("\n"))
         except Exception as e:
             result['status'] = False
             result['data'] = (('error:', e.message), )
@@ -355,9 +364,8 @@ class GwManServerFunctions(object):
             else:
                 tracerouted = False
             result['status'] = True
-            result['data'] = (('tracerouted', tracerouted),
-                              ('out', out.split("\n"))
-                              )
+            result['result'] = tracerouted
+            result['data'] = ( out.split("\n") )
         except Exception as e:
             result['status'] = False
             result['data'] = (('error:', e.message), )
@@ -379,9 +387,8 @@ class GwManServerFunctions(object):
             else:
                 allok = False
             result['status'] = True
-            result['data'] = (('tracerouted', allok),
-                              ('out', out.split("\n"))
-                              )
+            result['result'] = allok
+            result['data'] = ( out.split("\n") )
         except Exception as e:
             result['status'] = False
             result['data'] = (('error:', e.message), )
@@ -416,6 +423,7 @@ class GwManServerFunctions(object):
             data.append((sw.host, port))
 
         result['status'] = True
+        result['result'] = True if len(data) > 0 else False
         result['mac'] = mac
         result['vlan'] = sw.vlan
         result['data'] = data

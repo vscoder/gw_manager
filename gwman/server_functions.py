@@ -7,7 +7,7 @@ import subprocess
 import ConfigParser
 import re
 
-from netifaces import AF_INET, AF_INET6, AF_LINK, AF_PACKET, AF_BRIDGE
+from netifaces import AF_INET
 import netifaces as ni
 
 #import logging

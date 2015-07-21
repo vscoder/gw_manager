@@ -74,6 +74,7 @@ class GwManServerFunctions(object):
         """
         result = dict()
         result['status'] = True
+        result['result'] = True
         result['data'] = (
             ('mac_find', ('addr', )),
             ('mac_add', ('ip', 'mac', )),
@@ -90,7 +91,7 @@ class GwManServerFunctions(object):
         return result
 
 
-    def iface_info(self):
+    def ifaces_info(self):
         """
         Возвращает список свойств интерфейсов ifcli* и ifnat*
         пример:
@@ -108,7 +109,10 @@ class GwManServerFunctions(object):
             for ipinfo in iface:
                 networks.append(ipinfo)
 
-        return networks
+        result = dict()
+        result['status'] = True
+        result['result'] = True
+        result['data'] = networks
 
 
     def _dispatch(self, method, params):

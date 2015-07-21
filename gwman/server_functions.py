@@ -114,6 +114,8 @@ class GwManServerFunctions(object):
         result['result'] = True
         result['data'] = networks
 
+        return result
+
 
     def _dispatch(self, method, params):
         """Rules of dispatching functions to xmlrpc server

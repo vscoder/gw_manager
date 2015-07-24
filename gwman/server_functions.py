@@ -111,7 +111,7 @@ class GwManServerFunctions(object):
 
         result = dict()
         result['status'] = True
-        result['result'] = True
+        result['result'] = True if len(interfaces) > 0 else False
         result['data'] = networks
 
         return result

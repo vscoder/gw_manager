@@ -10,6 +10,9 @@ import MySQLdb.cursors
 from gwman import gwman
 
 class Dbi(gwman):
+    
+    active = False
+
     _blocked = {0: u"активна",
             1: u"заблокирована по балансу",
             2: u"заблокирована пользователем",

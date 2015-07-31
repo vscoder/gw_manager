@@ -300,9 +300,13 @@ class GwManServerFunctions(object):
             result['data'] = (('error:', e.message), )
             return result
 
-        result['status'] = True
-        result['result'] = dbi.active
-        result['data'] = [(dbi.field_descr(k).decode('utf-8'), v) for (k, v) in dbi._ipinfo.items()]
+        if dbi:
+            result['status'] = True
+            result['result'] = dbi.active
+            result['data'] = [(dbi.field_descr(k).decode('utf-8'), v) for (k, v) in dbi._ipinfo.items()]
+        else:
+            result['status'] = False
+            result['data'] = (('error:', "ip '{}' not exist in Billing DB".format(ip)), )
 
         return result
     
